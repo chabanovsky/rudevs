@@ -1,0 +1,5 @@
+local_settings.py
+.DS_Store
+*.pyc
+*.log
+*.session
