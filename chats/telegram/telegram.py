@@ -52,32 +52,14 @@ class WatchTelegramClient(TelegramClient):
             result.append(entity)
         return result
 
-    def get_content(self, entities):
+    def get_content(self, entities, output_callback):
         for entity in entities:
             total_count, messages, senders = self.get_message_history(
-                        entity, limit=self.message_count)
+                        entity, limit=self.message_count, min_id=entity.min_id)
             content = None
             for msg, sender in zip(
                     reversed(messages), reversed(senders)):
-                # Get the name of the sender if any
-                name = sender.first_name if sender else ''
-                # Format the message content
-                if hasattr(msg, 'media') and msg.media:
-                    content = '<{}> {}'.format(  # The media may or may not have a caption
-                        msg.media.__class__.__name__,
-                        getattr(msg.media, 'caption', ''))
-                else:
-                    if hasattr(msg, 'message'):
-                        content = msg.message
-                    else:
-                        content = ""
-                if content:
-                    # And print it to the user
-                    print('[{}:{}] (ID={}) {}: {}'.format(
-                        msg.date.hour, msg.date.minute, msg.id, name,
-                        content))                
-
-        
+                output_callback(sender, msg, entity)
 
 
     @staticmethod

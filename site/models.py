@@ -27,8 +27,8 @@ class TelegramChannel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     channel_id = db.Column(db.BigInteger)
-    title = db.Column(db.String(100))
-    username = db.Column(db.String(100))
+    title = db.Column(db.String)
+    username = db.Column(db.String)
     access_hash = db.Column(db.BigInteger)
 
     def __init__(self, channel_id, title, username, access_hash):
@@ -39,3 +39,42 @@ class TelegramChannel(db.Model):
 
     def __repr__(self):
         return '<TChannel %r>' % str(self.id)
+
+class TelegramTextMessage(db.Model):
+    __tablename__ = 'telegram_text_message'
+
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.BigInteger)
+    message = db.Column(db.String)
+    date = db.Column(db.DateTime, default=datetime.datetime.now)
+    channel_id = Column(db.BigInteger)
+    user_id = Column(db.BigInteger)
+
+    def __init__(self, message_id, message, channel_id, user_id):
+        self.message_id = message_id
+        self.message = message
+        self.channel_id = channel_id
+        self.user_id = user_id
+
+    def __repr__(self):
+        return '<TTxtMsg %r>' % str(self.id)
+
+class TelegramUser(db.Model):
+    __tablename__ = 'telegram_user'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.BigInteger)
+    first_name = db.Column(db.String)
+    last_name = db.Column(db.String)
+    username = db.Column(db.String)
+    access_hash = db.Column(db.BigInteger)
+
+    def __init__(self, user_id, first_name, last_name, username, access_hash):
+        self.user_id = user_id
+        self.first_name = first_name
+        self.last_name = last_name
+        self.username = username
+        self.access_hash = access_hash
+
+    def __repr__(self):
+        return '<TUser %r>' % str(self.id)
