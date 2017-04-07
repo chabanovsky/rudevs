@@ -86,6 +86,8 @@ def watch_telegram():
             session = db_session()
             for channel in channels:
                 min_id = session.query(TelegramTextMessage.message_id).filter(TelegramTextMessage.channel_id==channel.id).order_by(desc(TelegramTextMessage.message_id)).limit(1).scalar()
+                if not min_id:
+                    min_id = 0
                 setattr(channel, "min_id", min_id)
             session.close()
 
