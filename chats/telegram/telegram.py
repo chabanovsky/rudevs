@@ -1,14 +1,20 @@
 import datetime
 
 from telethon import TelegramClient, RPCError
-from telethon.tl.types import UpdateShortChatMessage, UpdateShortMessage
+from telethon.tl.types import UpdatesTg, UpdateShortChatMessage, UpdateShortMessage, UpdateNewChannelMessage, UpdateChannel
 from telethon.tl.types.channel import Channel
 from telethon.utils import get_display_name
 
+from sqlalchemy.sql import func
+from sqlalchemy import and_, not_, select, exists, delete, desc
+
+
+from models import TelegramChannel, TelegramTextMessage, TelegramUser
+from meta import db_session
 from local_settings import TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_USER_PHONE
 
 class WatchTelegramClient(TelegramClient):
-    dialog_count = 100
+    dialog_count = 150
     message_count = 20
     
     def __init__(self, session_user_id='sessionid', 
@@ -41,8 +47,6 @@ class WatchTelegramClient(TelegramClient):
                     else:
                         raise e
 
-        
-
     def get_channels(self):
         dialogs, entities = self.get_dialogs(self.dialog_count)
         result = list()
@@ -61,23 +65,115 @@ class WatchTelegramClient(TelegramClient):
                     reversed(messages), reversed(senders)):
                 output_callback(sender, msg, entity)
 
+    def subscribe_for_updates(self):
+        # Listen for updates
+        self.add_update_handler(lambda x: self.update_handler(x, self))
+
+    def update_telegram_channels(self):
+        channels = self.get_channels()
+        session = db_session()
+        ids = session.query(TelegramChannel)
+        for entity in channels:
+            channel = TelegramChannel.query.filter(TelegramChannel.channel_id==entity.id).first()
+            if not channel:
+                channel = TelegramChannel(entity.id, entity.title, entity.username, entity.access_hash)
+                session.add(channel)
+            else:
+                channel.title = entity.title
+                channel.username = entity.username
+                channel.access_hash = entity.access_hash
+            session.commit()
+        session.close()
+        return channels
+
+    def sync_telegram(self):
+        channels = self.update_telegram_channels()
+        session = db_session()
+        for channel in channels:
+            min_id = session.query(TelegramTextMessage.message_id).\
+                filter(TelegramTextMessage.channel_id==channel.id).\
+                order_by(desc(TelegramTextMessage.message_id)).limit(1).scalar()
+            if not min_id:
+                min_id = 0
+            setattr(channel, "min_id", min_id)
+        session.close()
+        self.get_content(channels, self.telegram_on_message_callback)
+
+
+
+    def start(self):
+        self.sync_telegram()
+        self.subscribe_for_updates()        
+        while True:
+            i = input('Enter q to stop: ')
+            if i == 'q':
+                return
+    
+    @staticmethod
+    def telegram_on_message_callback(sender, msg, entity):    
+        if not sender:
+            return
+
+        session = db_session()
+        user = TelegramUser.query.filter(TelegramUser.user_id==sender.id).first()
+        if not user:
+            user = TelegramUser(sender.id, 
+                        sender.first_name, 
+                        sender.last_name, 
+                        sender.username)
+            session.add(user)
+            session.commit()
+        
+        # Format the message content
+        if hasattr(msg, 'media') and msg.media:
+            return
+        else:
+            if hasattr(msg, 'message'):
+                content = msg.message
+            else:
+                return
+
+        # And print it to the user
+        db_msg = TelegramTextMessage.query.\
+            filter(and_(TelegramTextMessage.message_id==msg.id, TelegramTextMessage.channel_id==entity.id)).\
+            first()
+        if not db_msg:
+            db_msg = TelegramTextMessage(msg.id, content, entity.id, sender.id, msg.reply_to_msg_id)      
+            session.add(db_msg)
+            session.commit()
+            print('[{}:{}] (ID={}) {}: {}'.format(
+                msg.date.hour, msg.date.minute, msg.id, sender.first_name,
+                content))
+
+        session.close()     
+
+    def on_new_message(self, user, message, channel):
+        session = db_session()
+        min_id = session.query(TelegramTextMessage.message_id).\
+            filter(TelegramTextMessage.channel_id==channel.id).\
+            order_by(desc(TelegramTextMessage.message_id)).limit(1).scalar()
+        session.close()   
+        if min_id +1 != message.id:
+            self.sync_telegram()
+            return
+        self.telegram_on_message_callback(user, message, channel)
+
+    def on_new_channel (self, channel):
+        self.sync_telegram()
 
     @staticmethod
-    def update_handler(update_object):
-        if type(update_object) is UpdateShortMessage:
-            if update_object.out:
-                print('You sent {} to user #{}'.format(update_object.message,
-                                                       update_object.user_id))
-            else:
-                print('[User #{} sent {}]'.format(update_object.user_id,
-                                                  update_object.message))
+    def update_handler(update_object, lisntener):
+        if type(update_object) is not UpdatesTg:
+            return
 
-        elif type(update_object) is UpdateShortChatMessage:
-            if update_object.out:
-                print('You sent {} to chat #{}'.format(update_object.message,
-                                                       update_object.chat_id))
-            else:
-                print('[Chat #{}, user #{} sent {}]'.format(
-                    update_object.chat_id, update_object.from_id,
-                    update_object.message))
+        if type(update_object.updates[0]) is UpdateNewChannelMessage:
+            update = update_object.updates[0]
+            message = update.message
+            user = update_object.users[0]
+            channel = update_object.chats[0]
 
+            lisntener.on_new_message(user, message, channel)
+
+        if type(update_object.updates[0]) is UpdateChannel:
+            channel = update_object.chats[0]
+            lisntener.on_new_channel(channel)

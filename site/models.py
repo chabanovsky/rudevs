@@ -49,12 +49,14 @@ class TelegramTextMessage(db.Model):
     date = db.Column(db.DateTime, default=datetime.datetime.now)
     channel_id = Column(db.BigInteger)
     user_id = Column(db.BigInteger)
+    reply_to_id = db.Column(db.BigInteger)
 
-    def __init__(self, message_id, message, channel_id, user_id):
+    def __init__(self, message_id, message, channel_id, user_id, reply_to_id):
         self.message_id = message_id
         self.message = message
         self.channel_id = channel_id
         self.user_id = user_id
+        self.reply_to_id = reply_to_id
 
     def __repr__(self):
         return '<TTxtMsg %r>' % str(self.id)
@@ -67,14 +69,12 @@ class TelegramUser(db.Model):
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
     username = db.Column(db.String)
-    access_hash = db.Column(db.BigInteger)
 
-    def __init__(self, user_id, first_name, last_name, username, access_hash):
+    def __init__(self, user_id, first_name, last_name, username):
         self.user_id = user_id
         self.first_name = first_name
         self.last_name = last_name
         self.username = username
-        self.access_hash = access_hash
 
     def __repr__(self):
         return '<TUser %r>' % str(self.id)
