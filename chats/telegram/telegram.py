@@ -141,7 +141,7 @@ class WatchTelegramClient(TelegramClient):
             db_msg = TelegramTextMessage(msg.id, content, entity.id, sender.id, msg.reply_to_msg_id)      
             session.add(db_msg)
             session.commit()
-            print('[{}:{}] (ID={}) {}: {}'.format(
+            print('[{}][{}:{}] (ID={}) {}: {}'.format(entity.username,
                 msg.date.hour, msg.date.minute, msg.id, sender.first_name,
                 content))
 
@@ -174,6 +174,6 @@ class WatchTelegramClient(TelegramClient):
 
             lisntener.on_new_message(user, message, channel)
 
-        if type(update_object.updates[0]) is UpdateChannel:
+        elif type(update_object.updates[0]) is UpdateChannel:
             channel = update_object.chats[0]
             lisntener.on_new_channel(channel)
