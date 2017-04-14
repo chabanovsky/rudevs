@@ -78,3 +78,31 @@ class TelegramUser(db.Model):
 
     def __repr__(self):
         return '<TUser %r>' % str(self.id)
+
+
+class SkippGramVocabulary(db.Model):
+    __tablename__ = 'skipp_gram_vocabulary'
+
+    id = db.Column(db.Integer, primary_key=True)
+    vocabulary = db.Column(db.String)
+
+    def __init__(self, vocabulary):
+        self.vocabulary = vocabulary
+
+    def __repr__(self):
+        return '<SGVoc %r>' % str(self.id)
+
+class Word2VecModelDB(db.Model):
+    __tablename__ = 'word_2_vec_model'
+
+    id = db.Column(db.Integer, primary_key=True)
+    vocabulary_id = db.Column(db.Integer, ForeignKey('skipp_gram_vocabulary.id'), nullable=False)
+    dump_filename = db.Column(String) 
+
+    def __init__(self, vocabulary_id, dump_filename):
+        self.vocabulary_id = vocabulary_id
+        self.dump_filename = dump_filename
+
+    def __repr__(self):
+        return '<W2VModel %r>' % str(self.id)
+

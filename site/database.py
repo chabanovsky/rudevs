@@ -5,7 +5,7 @@ from datetime import datetime
 
 import logging
 from meta import db, db_session, engine
-from models import Statement, TelegramChannel
+from models import Statement, TelegramChannel, SkippGramVocabulary, Word2VecModelDB
 from sqlalchemy.sql import func
 from sqlalchemy import and_, not_, select, exists, delete
 

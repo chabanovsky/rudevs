@@ -3,3 +3,6 @@ local_settings.py
 *.pyc
 *.log
 *.session
+*.vscode*
+dump
+questions.csv

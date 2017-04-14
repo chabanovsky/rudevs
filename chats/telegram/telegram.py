@@ -1,5 +1,7 @@
 import datetime
+import copy
 
+import threading
 from telethon import TelegramClient, RPCError
 from telethon.tl.types import UpdatesTg, UpdateShortChatMessage, UpdateShortMessage, UpdateNewChannelMessage, UpdateChannel
 from telethon.tl.types.channel import Channel
@@ -12,6 +14,7 @@ from sqlalchemy import and_, not_, select, exists, delete, desc
 from models import TelegramChannel, TelegramTextMessage, TelegramUser
 from meta import db_session
 from local_settings import TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_USER_PHONE
+
 
 class WatchTelegramClient(TelegramClient):
     dialog_count = 150
@@ -99,11 +102,12 @@ class WatchTelegramClient(TelegramClient):
         session.close()
         self.get_content(channels, self.telegram_on_message_callback)
 
-
-
     def start(self):
         self.sync_telegram()
-        self.subscribe_for_updates()        
+        self.subscribe_for_updates() 
+        t = threading.Thread(target=start_analys)
+        t.daemon = True
+        t.start()       
         while True:
             i = input('Enter q to stop: ')
             if i == 'q':
@@ -148,14 +152,14 @@ class WatchTelegramClient(TelegramClient):
         session.close()     
 
     def on_new_message(self, user, message, channel):
-        session = db_session()
-        min_id = session.query(TelegramTextMessage.message_id).\
-            filter(TelegramTextMessage.channel_id==channel.id).\
-            order_by(desc(TelegramTextMessage.message_id)).limit(1).scalar()
-        session.close()   
-        if min_id +1 != message.id:
-            self.sync_telegram()
-            return
+        #session = db_session()
+        #min_id = session.query(TelegramTextMessage.message_id).\
+        #    filter(TelegramTextMessage.channel_id==channel.id).\
+        #    order_by(desc(TelegramTextMessage.message_id)).limit(1).scalar()
+        #session.close()   
+        #if min_id +1 != message.id:
+        #    self.sync_telegram()
+        #    return
         self.telegram_on_message_callback(user, message, channel)
 
     def on_new_channel (self, channel):
@@ -165,6 +169,13 @@ class WatchTelegramClient(TelegramClient):
     def update_handler(update_object, lisntener):
         if type(update_object) is not UpdatesTg:
             return
+
+        WatchTelegramClient.threaded_update_handler([update_object, lisntener])
+
+    @staticmethod
+    def threaded_update_handler(args):
+        update_object = args[0]
+        lisntener = args[1]
 
         if type(update_object.updates[0]) is UpdateNewChannelMessage:
             update = update_object.updates[0]
@@ -177,3 +188,8 @@ class WatchTelegramClient(TelegramClient):
         elif type(update_object.updates[0]) is UpdateChannel:
             channel = update_object.chats[0]
             lisntener.on_new_channel(channel)
+
+def start_analys():
+    w2vmodel = Word2VecModel()
+    saved_model_filename = w2vmodel.upload_saved_data_for_model()
+    

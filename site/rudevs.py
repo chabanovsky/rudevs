@@ -11,6 +11,7 @@ sys.path.append("/development/Telethon/telethon")
 
 if sys.version_info[0] >= 3:
     from chats.telegram.telegram import WatchTelegramClient
+    from analysis.analyse import do_analyse, update_stored_data, do_validate
 
 from meta import *
 from views import *
@@ -31,5 +32,15 @@ if __name__ == "__main__":
                 if client:
                     client = client.disconnect()
             sys.exit()        
+        if str(sys.argv[1]) == "--analyse":
+            do_analyse()
+            sys.exit()        
+        if str(sys.argv[1]) == "--update_stored_data":
+            update_stored_data()
+            sys.exit()        
+        if str(sys.argv[1]) == "--validate":
+            do_validate()
+            sys.exit()        
+            
 
     app.run()
