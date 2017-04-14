@@ -259,7 +259,7 @@ class Word2VecModel():
                 print(log_str)
 
             if self.debug_print:
-                self.visualise(self.embeddings.eval(), self.reverse_dictionary, "tsne_validate.png")
+                self.visualise(self.embeddings.eval(), self.reverse_dictionary, "./dump/tsne_validate.png")
         
     def declare_tf(self):
         self.graph = tf.Graph()
