@@ -219,8 +219,6 @@ class Word2VecModel():
         graph, saver, init = self.declare_tf()
         return dump_filename
 
-    def 
-
     def validate_examples(self):
         # We pick a random validation set to sample nearest neighbors. Here we limit the
         # validation samples to the words that have a low numeric ID, which by
