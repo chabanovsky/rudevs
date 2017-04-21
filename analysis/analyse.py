@@ -62,7 +62,7 @@ class QuestionAnalyser():
             return False
 
         if not self.has_question_words(filtered_vocabualary):
-            print (question_str.strip(), " [not valid: no question words]")            
+            print ("[not valid: no question words]")            
             return False
 
         keywords = list()

@@ -244,8 +244,12 @@ def start_analysis_loop():
         session.commit()
         session.close()
 
-        if new_statment_was_created:
-           scheduler.enter(sec_to_end_stmnt+5, 1, do_analyse)
+        do_analyse()
+
+        if not scheduler.empty():
+            scheduler.cancel(do_analyse)
+        scheduler.enter(sec_to_end_stmnt+5, 1, do_analyse)
+        scheduler.run()
             
 def do_analyse():
     print ("\r\n[do_analyse...]")
@@ -284,8 +288,6 @@ def do_analyse():
         is_question = analyser.validate(''.join(message[0])) 
         if is_question:
             questions.append(stmnt_id)       
-            print ("\r\n_______________Question _______________")
-            print (message)
         else:
             not_question.append(stmnt_id)
 
