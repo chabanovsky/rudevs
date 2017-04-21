@@ -5,33 +5,52 @@ from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, C
 from meta import app as application, db
 
 class Statement(db.Model):
-    __tablename__ = 'user'
+    __tablename__ = 'statement'
 
-    id = db.Column(db.Integer, primary_key=True)
-    channel = db.Column(db.Integer)
-    text = db.Column(db.Integer)
-    username = db.Column(db.String(100))
-    date = db.Column(db.DateTime, nullable=True)
+    id              = db.Column(db.Integer, primary_key=True)
+    channel_id      = db.Column(db.BigInteger)
+    user_id         = db.Column(db.BigInteger)
+    first_msg_id    = db.Column(db.BigInteger)
+    last_msg_id     = db.Column(db.BigInteger)
+    text            = db.Column(db.String)
+    # first added msg creation time
+    created         = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
+    # last added msg creation time
+    updated         = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
+    was_processed   = db.Column(db.Boolean, default=False)
+    is_question     = db.Column(db.Boolean, default=False)
 
-    def __init__(self, channel, text, username, date):
-        self.channel = channel
-        self.text = text
-        self.username = username
-        self.date = date
+    def __init__(self, channel_id, 
+            user_id, 
+            first_msg_id,
+            created=datetime.datetime.now(),
+            is_question=False,
+            was_processed=False):
+        self.channel_id     = channel_id
+        self.user_id        = user_id
+        self.first_msg_id   = first_msg_id
+        self.last_msg_id    = first_msg_id
+        self.created        = created
+        self.updated        = created
+        self.is_question    = is_question 
+        self.was_processed  = was_processed
 
     def __repr__(self):
-        return '<Statement %r>' % str(self.id)
+        return '<Stmnt %r>' % str(self.id)
 
 class TelegramChannel(db.Model):
     __tablename__ = 'telegram_channel'
 
-    id = db.Column(db.Integer, primary_key=True)
-    channel_id = db.Column(db.BigInteger)
-    title = db.Column(db.String)
-    username = db.Column(db.String)
+    id          = db.Column(db.Integer, primary_key=True)
+    channel_id  = db.Column(db.BigInteger)
+    title       = db.Column(db.String)
+    username    = db.Column(db.String)
     access_hash = db.Column(db.BigInteger)
 
-    def __init__(self, channel_id, title, username, access_hash):
+    def __init__(self, channel_id, 
+            title, 
+            username, 
+            access_hash):
         self.channel_id = channel_id
         self.title = title
         self.username = username
@@ -43,20 +62,26 @@ class TelegramChannel(db.Model):
 class TelegramTextMessage(db.Model):
     __tablename__ = 'telegram_text_message'
 
-    id = db.Column(db.Integer, primary_key=True)
-    message_id = db.Column(db.BigInteger)
-    message = db.Column(db.String)
-    date = db.Column(db.DateTime, default=datetime.datetime.now)
-    channel_id = Column(db.BigInteger)
-    user_id = Column(db.BigInteger)
-    reply_to_id = db.Column(db.BigInteger)
+    id              = db.Column(db.Integer, primary_key=True)
+    message_id      = db.Column(db.BigInteger)
+    message         = db.Column(db.String)
+    created         = db.Column(db.DateTime, default=datetime.datetime.now)
+    channel_id      = Column(db.BigInteger)
+    user_id         = Column(db.BigInteger)
+    reply_to_id     = db.Column(db.BigInteger)
 
-    def __init__(self, message_id, message, channel_id, user_id, reply_to_id):
-        self.message_id = message_id
-        self.message = message
-        self.channel_id = channel_id
-        self.user_id = user_id
-        self.reply_to_id = reply_to_id
+    def __init__(self, message_id, 
+            message, 
+            channel_id, 
+            user_id, 
+            reply_to_id, 
+            created=datetime.datetime.now()):
+        self.message_id     = message_id
+        self.message        = message
+        self.channel_id     = channel_id
+        self.user_id        = user_id
+        self.reply_to_id    = reply_to_id
+        self.created        = created
 
     def __repr__(self):
         return '<TTxtMsg %r>' % str(self.id)
@@ -64,17 +89,20 @@ class TelegramTextMessage(db.Model):
 class TelegramUser(db.Model):
     __tablename__ = 'telegram_user'
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.BigInteger)
-    first_name = db.Column(db.String)
-    last_name = db.Column(db.String)
-    username = db.Column(db.String)
+    id          = db.Column(db.Integer, primary_key=True)
+    user_id     = db.Column(db.BigInteger)
+    first_name  = db.Column(db.String)
+    last_name   = db.Column(db.String)
+    username    = db.Column(db.String)
 
-    def __init__(self, user_id, first_name, last_name, username):
-        self.user_id = user_id
+    def __init__(self, user_id,
+            first_name, 
+            last_name, 
+            username):
+        self.user_id    = user_id
         self.first_name = first_name
-        self.last_name = last_name
-        self.username = username
+        self.last_name  = last_name
+        self.username   = username
 
     def __repr__(self):
         return '<TUser %r>' % str(self.id)
@@ -83,14 +111,39 @@ class TelegramUser(db.Model):
 class SkippGramVocabulary(db.Model):
     __tablename__ = 'skipp_gram_vocabulary'
 
-    id = db.Column(db.Integer, primary_key=True)
-    vocabulary = db.Column(db.String)
+    id          = db.Column(db.Integer, primary_key=True)
+    vocabulary  = db.Column(db.String)
 
     def __init__(self, vocabulary):
         self.vocabulary = vocabulary
 
     def __repr__(self):
         return '<SGVoc %r>' % str(self.id)
+
+class DBStaticAssessment(db.Model):
+    __tablename__ = 'static_assessment'
+
+    id                          = db.Column(db.Integer, primary_key=True)
+    question_count              = db.Column(db.Integer)
+    mimimum_question_length     = db.Column(db.Integer)
+    maximum_question_length     = db.Column(db.Integer)
+    mimimum_question_word_count = db.Column(db.Integer)
+    maximum_question_word_count = db.Column(db.Integer)
+
+    def __init__(self, question_count, 
+            mimimum_question_length, 
+            maximum_question_length, 
+            mimimum_question_word_count, 
+            maximum_question_word_count):
+        self.question_count = question_count
+        self.mimimum_question_length = mimimum_question_length
+        self.maximum_question_length = maximum_question_length
+        self.mimimum_question_word_count = mimimum_question_word_count
+        self.maximum_question_word_count = maximum_question_word_count
+
+    def __repr__(self):
+        return '<DBSA %r>' % str(self.id)
+
 
 class Word2VecModelDB(db.Model):
     __tablename__ = 'word_2_vec_model'
@@ -106,3 +159,13 @@ class Word2VecModelDB(db.Model):
     def __repr__(self):
         return '<W2VModel %r>' % str(self.id)
 
+class VocabularyQueston(db.Model):
+    __tablename__ = 'vocabulary_queston'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    def __init__(self):
+        pass
+
+    def __repr__(self):
+        return '<VQues %r>' % str(self.id)

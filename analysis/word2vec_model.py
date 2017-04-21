@@ -14,8 +14,11 @@ import os
 import random
 import zipfile
 import re
+import sys
 
+import nltk
 import pymorphy2
+
 import numpy as np
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -24,13 +27,18 @@ import tensorflow as tf
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
+from sortedcontainers import SortedList
 from models import SkippGramVocabulary, Word2VecModelDB
+from analysis.langs import Langs
+from analysis.question_words import QuestionWords
+from analysis.utils import filter_noise, process_text
 from meta import db_session
 from sqlalchemy import desc
 
 class Word2VecModel():
     filename = "questions.csv"
     vocabulary_size = 24000
+    most_common_coefficient = 10 # 
     word_len_threshold = 3
     data_index = 0
 
@@ -42,12 +50,15 @@ class Word2VecModel():
     num_sampled = 64        # Number of negative examples to sample.
     num_steps = 100001
 
-
     # dataset variables
     data = list()
     count = list()
     dictionary = dict()
     reverse_dictionary = dict()
+
+    morph = pymorphy2.MorphAnalyzer()
+    langs_parser = Langs()
+    question_words_parser = QuestionWords()
 
     def __init__(self, filename="questions.csv", debug_print=True, dump_filename="dump/word2vec_model"):
         self.filename = filename
@@ -56,45 +67,15 @@ class Word2VecModel():
 
     def read_question_data(self):
         data = ""
-         # drop all words with lenght less then the threshold
-        morph = pymorphy2.MorphAnalyzer()
+
         with open(self.filename, 'rt', encoding="utf8") as csvfile:
             csv_reader = csv.reader(csvfile, delimiter=',')
+
             for row in csv_reader:
                 _, _, _, _, body, _ = row
-                body = re.sub('<pre>.*?</pre>',' ', body, flags=re.DOTALL)
-                body = re.sub('<code>.*?</code>',' ', body, flags=re.DOTALL)
-                body = re.sub('<[^<]+?>', ' ', body) 
-                body = body.replace(",", " ")
-                body = body.replace(".", " ")
-                body = body.replace("?", " ")
-                body = body.replace("\n", " ")
-                body = body.replace("\\\n", " ")
-                body = body.replace("\\\\n", " ")
-                body = body.replace("(", " ")
-                body = body.replace(")", " ")
-                body = body.replace(":", " ")
-                body = body.replace(";", " ")
-                body = body.replace("\'", " ")
-                body = body.replace("\\'", " ")
-                body = body.replace("\\", " ")
-                body = body.replace("\"", " ")
-                body = body.replace("/", " ")
-                body = body.replace("|", " ")
-                body = body.strip()
-                
-                for word in body.lower().split(" "):
-                    if len(word) < self.word_len_threshold:
-                        continue
-                    p = morph.parse(word)[0]
-                    # http://pymorphy2.readthedocs.io/en/latest/user/grammemes.html
-                    if str(p.tag) in ['LATN', 'PNCT', 'NUMB', 'UNKN']:
-                        continue
-                    # http://pymorphy2.readthedocs.io/en/latest/user/grammemes.html
-                    if str(p.tag.POS) not in ['NPRO', 'PRED', 'PREP', 'CONJ', 'PRCL', 'INTJ']:
-                        data += " " +  p.normal_form
-        return data
+                data += " " + process_text(body)
 
+        return data
 
     def build_dataset(self, words, n_words):
         """Process raw inputs into a dataset."""
@@ -163,7 +144,7 @@ class Word2VecModel():
         plt.savefig(filename)
 
     def update_train_data(self):
-        vocabulary = self.read_question_data()
+        vocabulary= self.read_question_data()
         db_vocabulary_item = SkippGramVocabulary(vocabulary)
         session = db_session()
         session.add(db_vocabulary_item)
@@ -172,13 +153,16 @@ class Word2VecModel():
 
     def upload_dataset(self, id=None):
         session = db_session()
+        query = session.query(SkippGramVocabulary.id, SkippGramVocabulary.vocabulary)
         if id is None:
-            query = session.query(SkippGramVocabulary.id, SkippGramVocabulary.vocabulary).order_by(desc(SkippGramVocabulary.id))
+            query = query.order_by(desc(SkippGramVocabulary.id))
         else:
-            query = session.query(SkippGramVocabulary.id, SkippGramVocabulary.vocabulary).filter(SkippGramVocabulary.id==id)
+            query = query.filter(SkippGramVocabulary.id==id)
         db_item = query.first()
-        vocabulary = str(db_item.vocabulary)
+
+        vocabulary = str(db_item.vocabulary)        
         vocabulary_id = int(db_item.id)
+
         session.close()
         # Build the dictionary and replace rare words with UNK token.
         # data: a set of indexes of words in the "dictionary"
@@ -214,10 +198,40 @@ class Word2VecModel():
         self.upload_dataset(vocabulary_id)
         return dump_filename
     
-    def upload_saved_data_for_model():
-        dump_filename = self.restore_last()
-        graph, saver, init = self.declare_tf()
-        return dump_filename
+    def word_index(self, word):
+        return int(self.dictionary.get(word, -1))
+
+    def prepare_most_common_words(self):
+        result_word_dict    = dict()
+        dump_filename       = self.restore_last()
+        graph, saver        = self.declare_tf()
+        words_count         = self.vocabulary_size // self.most_common_coefficient
+        most_common_words   = np.arange(words_count)
+
+        with graph.as_default():
+            norm =  tf.sqrt(tf.reduce_sum(tf.square(self.embeddings), 1, keep_dims=True))
+            normalized_embeddings = self.embeddings / norm
+
+            dataset = tf.constant(most_common_words, dtype=tf.int32)
+            dataset_embeddings = tf.nn.embedding_lookup(
+                    normalized_embeddings, dataset)
+            similarity = tf.matmul(
+                    dataset_embeddings, normalized_embeddings, transpose_b=True)
+
+        with tf.Session(graph=graph) as session:
+            saver.restore(session, dump_filename)
+            
+            sim = session.run(similarity)
+            for i in xrange(words_count):
+                common_word = self.reverse_dictionary[most_common_words[i]]
+                top_k = 15  # number of nearest neighbors
+                nearest = (-sim[i, :]).argsort()[1:top_k + 1]
+                nearest_words = list()
+                for k in xrange(top_k):
+                    nearest_words.append(self.reverse_dictionary[nearest[k]])
+                result_word_dict[common_word] = nearest_words
+
+        self.most_common_words = result_word_dict
 
     def validate_examples(self):
         # We pick a random validation set to sample nearest neighbors. Here we limit the
@@ -250,7 +264,7 @@ class Word2VecModel():
             sim = similarity.eval()
             for i in xrange(valid_size):
                 valid_word = self.reverse_dictionary[valid_examples[i]]
-                top_k = 8  # number of nearest neighbors
+                top_k = 30  # number of nearest neighbors
                 nearest = (-sim[i, :]).argsort()[1:top_k + 1]
                 log_str = 'Nearest to %s:' % valid_word
                 for k in xrange(top_k):

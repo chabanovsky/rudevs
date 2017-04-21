@@ -2,19 +2,30 @@ import datetime
 import copy
 
 import threading
+import sched, time
+from queue import Queue
 from telethon import TelegramClient, RPCError
 from telethon.tl.types import UpdatesTg, UpdateShortChatMessage, UpdateShortMessage, UpdateNewChannelMessage, UpdateChannel
 from telethon.tl.types.channel import Channel
 from telethon.utils import get_display_name
 
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, literal_column
 from sqlalchemy import and_, not_, select, exists, delete, desc
+from sqlalchemy.dialects.postgresql import aggregate_order_by
 
-
-from models import TelegramChannel, TelegramTextMessage, TelegramUser
+from models import TelegramChannel, TelegramTextMessage, TelegramUser, Statement
 from meta import db_session
 from local_settings import TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_USER_PHONE
+from analysis.analyse import QuestionAnalyser
+from analysis.static_assessment import StaticAssessment
 
+message_queue = Queue()
+analyser = QuestionAnalyser()
+static_assessment = StaticAssessment()
+scheduler = sched.scheduler(time.time, time.sleep)
+
+letters_per_min = 200
+letters_per_second = letters_per_min // 60
 
 class WatchTelegramClient(TelegramClient):
     dialog_count = 150
@@ -105,9 +116,9 @@ class WatchTelegramClient(TelegramClient):
     def start(self):
         self.sync_telegram()
         self.subscribe_for_updates() 
-        t = threading.Thread(target=start_analys)
-        t.daemon = True
-        t.start()       
+        analyser_tread = threading.Thread(target=start_analysis_loop)
+        analyser_tread.daemon = True
+        analyser_tread.start()       
         while True:
             i = input('Enter q to stop: ')
             if i == 'q':
@@ -141,13 +152,19 @@ class WatchTelegramClient(TelegramClient):
         db_msg = TelegramTextMessage.query.\
             filter(and_(TelegramTextMessage.message_id==msg.id, TelegramTextMessage.channel_id==entity.id)).\
             first()
+        creation_time = datetime.datetime.now()
         if not db_msg:
-            db_msg = TelegramTextMessage(msg.id, content, entity.id, sender.id, msg.reply_to_msg_id)      
+            db_msg = TelegramTextMessage(msg.id, 
+                    content, 
+                    entity.id, 
+                    sender.id, 
+                    msg.reply_to_msg_id, 
+                    creation_time)      
             session.add(db_msg)
             session.commit()
-            print('[{}][{}:{}] (ID={}) {}: {}'.format(entity.username,
-                msg.date.hour, msg.date.minute, msg.id, sender.first_name,
-                content))
+            
+            global message_queue
+            message_queue.put([entity.id, sender.id, msg.id, content, creation_time])
 
         session.close()     
 
@@ -174,8 +191,7 @@ class WatchTelegramClient(TelegramClient):
 
     @staticmethod
     def threaded_update_handler(args):
-        update_object = args[0]
-        lisntener = args[1]
+        update_object, lisntener = args
 
         if type(update_object.updates[0]) is UpdateNewChannelMessage:
             update = update_object.updates[0]
@@ -189,7 +205,101 @@ class WatchTelegramClient(TelegramClient):
             channel = update_object.chats[0]
             lisntener.on_new_channel(channel)
 
-def start_analys():
-    w2vmodel = Word2VecModel()
-    saved_model_filename = w2vmodel.upload_saved_data_for_model()
+def start_analysis_loop():
+    static_assessment.load()
+
+    min_to_end_stmnt = static_assessment.maximum_question_length // letters_per_min
+    sec_to_end_stmnt = static_assessment.maximum_question_length // letters_per_second
+
+    # Analyse all that was not up to now
+    do_analyse()
+
+    while True:
+        channel_id, user_id, message_id, message, creation_time = message_queue.get()
+        created_ago = creation_time - datetime.timedelta(minutes=min_to_end_stmnt)
+        updated_ago = creation_time - datetime.timedelta(seconds=(len(message) // letters_per_second))
+        new_statment_was_created = False
+
+        session = db_session()
+        stmnt = Statement.query.\
+                filter(and_(Statement.channel_id==channel_id, 
+                    Statement.user_id==user_id,
+                    Statement.created>created_ago,
+                    Statement.updated>updated_ago)).\
+                first()
+
+        if stmnt is not None:
+            print("Update stmnt: ", stmnt.id)
+            update_query = Statement.__table__.update().values(updated=creation_time, last_msg_id=message_id).\
+                where(Statement.id==stmnt.id)
+            session.execute(update_query)
+        else:
+            stmnt = Statement(channel_id, 
+                user_id, 
+                message_id,
+                creation_time)
+            session.add(stmnt)
+            new_statment_was_created = True
+
+        session.commit()
+        session.close()
+
+        if new_statment_was_created:
+           scheduler.enter(sec_to_end_stmnt+5, 1, do_analyse)
+            
+def do_analyse():
+    print ("\r\n[do_analyse...]")
+    min_to_end_stmnt = static_assessment.maximum_question_length // letters_per_min
+    created_ago = datetime.datetime.now() - datetime.timedelta(minutes=min_to_end_stmnt)
+
+    session = db_session()
     
+    stmnts = session.query(Statement.id, Statement.first_msg_id, Statement.last_msg_id).\
+        filter(and_(Statement.created<created_ago, Statement.was_processed==False)).distinct().all()
+
+    if stmnts is None:
+        print ("[do_analyse] nothing to process.") 
+        return
+
+    pairs = dict()
+    for stmnt in stmnts:
+        stmnt_id, first_id, last_id = stmnt
+        message_text = session.query(func.string_agg(TelegramTextMessage.message, 
+                    aggregate_order_by(literal_column("'. '"), 
+                            TelegramTextMessage.message))).\
+                filter(TelegramTextMessage.message_id.between(first_id, last_id)).\
+                distinct().\
+                all()   
+        pairs[stmnt_id] = message_text
+    session.close()
+
+    questions = list()
+    not_question = list()
+    for stmnt_id, message in pairs.items():
+        if len(message) == 0:
+            print ("[Message len error]")
+            continue
+
+        is_question = analyser.validate(''.join(message[0])) 
+        if is_question:
+            questions.append(stmnt_id)       
+            print ("\r\n_______________Question _______________")
+            print (message)
+        else:
+            not_question.append(stmnt_id)
+
+    session = db_session()
+
+    if len(questions) > 0:
+        update_query = Statement.__table__.update().values(is_question=True, was_processed=True).\
+            where(Statement.id.in_(questions))
+        session.execute(update_query)
+
+    if len(not_question) > 0:
+        update_query_2 = Statement.__table__.update().values(is_question=False, was_processed=True).\
+            where(Statement.id.in_(not_question))
+        session.execute(update_query_2)
+
+    session.commit()
+    session.close()   
+
