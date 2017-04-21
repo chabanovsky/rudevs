@@ -254,7 +254,7 @@ def do_analyse():
 
     session = db_session()
     
-    stmnts = session.query(Statement.id, Statement.first_msg_id, Statement.last_msg_id).\
+    stmnts = session.query(Statement.id, Statement.channel_id, Statement.user_id, Statement.first_msg_id, Statement.last_msg_id).\
         filter(and_(Statement.created<created_ago, Statement.was_processed==False)).distinct().all()
 
     if stmnts is None:
@@ -263,10 +263,11 @@ def do_analyse():
 
     pairs = dict()
     for stmnt in stmnts:
-        stmnt_id, first_id, last_id = stmnt
+        stmnt_id, channel_id, user_id, first_id, last_id = stmnt
         message_text = session.query(func.string_agg(TelegramTextMessage.message, 
                     aggregate_order_by(literal_column("'. '"), 
                             TelegramTextMessage.message))).\
+                filter(and_(TelegramTextMessage.channel_id==channel_id, TelegramTextMessage.user_id==user_id)).\
                 filter(TelegramTextMessage.message_id.between(first_id, last_id)).\
                 distinct().\
                 all()   
@@ -302,4 +303,5 @@ def do_analyse():
 
     session.commit()
     session.close()   
+    print ("[do_analyse] done.")
 
