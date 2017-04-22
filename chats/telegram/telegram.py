@@ -127,6 +127,7 @@ class WatchTelegramClient(TelegramClient):
     @staticmethod
     def telegram_on_message_callback(sender, msg, entity):    
         if not sender:
+            print ("[telegram_on_message_callback] ERROR: no sender")
             return
 
         session = db_session()
@@ -140,13 +141,11 @@ class WatchTelegramClient(TelegramClient):
             session.commit()
         
         # Format the message content
-        if hasattr(msg, 'media') and msg.media:
-            return
+        if hasattr(msg, 'message'):
+            content = msg.message
         else:
-            if hasattr(msg, 'message'):
-                content = msg.message
-            else:
-                return
+            print ("[telegram_on_message_callback] ERROR: hasattr(msg, 'message')")
+            return
 
         # And print it to the user
         db_msg = TelegramTextMessage.query.\
@@ -154,6 +153,7 @@ class WatchTelegramClient(TelegramClient):
             first()
         creation_time = datetime.datetime.now()
         if not db_msg:
+            print (creation_time.strftime('%H%:%M | %d.%m'), " [telegram_on_message_callback] new msg arrived")
             db_msg = TelegramTextMessage(msg.id, 
                     content, 
                     entity.id, 
@@ -165,6 +165,8 @@ class WatchTelegramClient(TelegramClient):
             
             global message_queue
             message_queue.put([entity.id, sender.id, msg.id, content, creation_time])
+        else:
+            print ("[telegram_on_message_callback] msg already in the DB")
 
         session.close()     
 
@@ -210,10 +212,12 @@ def start_analysis_loop():
 
     min_to_end_stmnt = static_assessment.maximum_question_length // letters_per_min
     sec_to_end_stmnt = static_assessment.maximum_question_length // letters_per_second
+    print ("[start_analysis_loop] min to end: ", min_to_end_stmnt, ", sec to end: ", sec_to_end_stmnt)
 
     # Analyse all that was not up to now
     do_analyse()
 
+    current_exec_event = None
     while True:
         channel_id, user_id, message_id, message, creation_time = message_queue.get()
         created_ago = creation_time - datetime.timedelta(minutes=min_to_end_stmnt)
@@ -228,28 +232,33 @@ def start_analysis_loop():
                     Statement.updated>updated_ago)).\
                 first()
 
-        if stmnt is not None:
-            print("Update stmnt: ", stmnt.id)
-            update_query = Statement.__table__.update().values(updated=creation_time, last_msg_id=message_id).\
-                where(Statement.id==stmnt.id)
-            session.execute(update_query)
-        else:
+        if stmnt is None:
             stmnt = Statement(channel_id, 
                 user_id, 
                 message_id,
                 creation_time)
             session.add(stmnt)
             new_statment_was_created = True
+            print("New stmnt (msgid): ", message_id)
+        else:
+            print("Update stmnt: ", stmnt.id)
+            update_query = Statement.__table__.update().values(updated=creation_time, last_msg_id=message_id).\
+                where(Statement.id==stmnt.id)
+            session.execute(update_query)
 
         session.commit()
         session.close()
 
         do_analyse()
 
-        if not scheduler.empty():
-            scheduler.cancel(do_analyse)
-        scheduler.enter(sec_to_end_stmnt+5, 1, do_analyse)
-        scheduler.run()
+        if current_exec_event is not None:
+            scheduler.cancel(current_exec_event)
+            current_exec_event = None
+        else:
+            if  not scheduler.empty():
+                print ("[start_analysis_loop] SYNC ERROR...")
+        current_exec_event = scheduler.enter(sec_to_end_stmnt+5, 1, do_analyse)
+        scheduler.run(blocking=False)
             
 def do_analyse():
     print ("\r\n[do_analyse...]")
@@ -261,9 +270,11 @@ def do_analyse():
     stmnts = session.query(Statement.id, Statement.channel_id, Statement.user_id, Statement.first_msg_id, Statement.last_msg_id).\
         filter(and_(Statement.created<created_ago, Statement.was_processed==False)).distinct().all()
 
-    if stmnts is None:
+    if stmnts is None or len(stmnts) == 0:
         print ("[do_analyse] nothing to process.") 
         return
+    else:
+        print ("[do_analyse] to process: ", len(stmnts)) 
 
     pairs = dict()
     for stmnt in stmnts:
@@ -283,6 +294,7 @@ def do_analyse():
     for stmnt_id, message in pairs.items():
         if len(message) == 0:
             print ("[Message len error]")
+            not_question.append(stmnt_id)
             continue
 
         is_question = analyser.validate(''.join(message[0])) 
@@ -294,11 +306,13 @@ def do_analyse():
     session = db_session()
 
     if len(questions) > 0:
+        print ("[do_analyse] questions found: ", len(questions))
         update_query = Statement.__table__.update().values(is_question=True, was_processed=True).\
             where(Statement.id.in_(questions))
         session.execute(update_query)
 
     if len(not_question) > 0:
+        print ("[do_analyse] not questions: ", len(not_question))
         update_query_2 = Statement.__table__.update().values(is_question=False, was_processed=True).\
             where(Statement.id.in_(not_question))
         session.execute(update_query_2)

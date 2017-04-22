@@ -1,0 +1,43 @@
+{% extends "base.html" %} 
+{% block content %}
+<div>
+    <h3>
+        <div class="statement-info" style="width: 100%; font-size: 16px; padding-bottom: 20px;">
+            {% set channel = stmnt_channel_info(statement) %}
+            <span class="channel-name"><a target="_blank" href="https://web.telegram.org/#/im?p=@{{ channel.username }}">@{{ channel.username }}</a></span>
+            <span> | </span>
+            <span class="channel-title">{{ channel.title }}</span>
+        </div>
+    </h3>
+    <p>
+        <div class="chat-log">
+            {% set msgs = message_list(statement) %}
+            <table>
+                {% for item in msgs %}
+                    <tr>
+                        <th class="date">{{ item.created.strftime('%H%:%M | %d.%m') }}</th>
+                        {% if item.message_id >= statement.first_msg_id and item.message_id <= statement.last_msg_id %}
+                            <th class="statements-message">{{ item.message }}</th>
+                        {% else %}
+                            {% if item.user_id == statement.user_id %}
+                                <th class="another-self-message">{{ item.message }}</th>
+                            {% else %}
+                                <th class="another-outer-message">{{ item.message }}</th>
+                            {% endif %}
+                        {% endif %}
+                    </tr>
+                    {% if item.message_id == statement.last_msg_id %}
+                    <tr>
+                        <th class="date"></th>
+                        <th class="actions">
+                            <a class="button">Связать</a>
+                            <input type="text">
+                            <a style="float:left; margin-left: 0px;" class="button">Отклонить</a>
+                        </th>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            </table>
+        </div>
+    </p>
+{% endblock %}

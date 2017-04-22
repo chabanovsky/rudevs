@@ -19,6 +19,7 @@ class Statement(db.Model):
     updated         = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
     was_processed   = db.Column(db.Boolean, default=False)
     is_question     = db.Column(db.Boolean, default=False)
+    false_assumption= db.Column(db.Boolean, default=False)
 
     def __init__(self, channel_id, 
             user_id, 

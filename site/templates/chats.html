@@ -1,6 +1,28 @@
 {% extends "base.html" %} 
 {% block content %}
 <div>
-    <h3>Chats</h3>
+    <h3>Telegram Channels</h3>
+    {% for item in paginator.items %}
+    <p>
+        <div class="statement-box">
+            <div class="statement">
+                {{ statement_messages(item) }}
+            </div>
+            <div class="statement-actions">
+                <div class="statement-info">
+                    {% set channel = stmnt_channel_info(item) %}
+                    <span>{{ item.created.strftime('%H%:%M  %d.%m') }}</span>
+                    <span> | </span>
+                    <span class="channel-name"><a target="_blank" href="https://web.telegram.org/#/im?p=@{{ channel.username }}">@{{ channel.username }}</a></span>
+                    <span> | </span>
+                    <span class="channel-title">{{ channel.title }}</span>
+                </div>
+                <a class="button" href="{{ url_for('chat_statement', stmnt_id=item.id) }}">Подробнее</a>
+                <a class="button">Отклонить</a>
+            </div>
+        </div>
+    </p>
+    {% endfor %}
 </div>
+{% include 'paginator.html' %}
 {% endblock %}

@@ -67,7 +67,6 @@ class QuestionAnalyser():
 
         keywords = list()
 
-
         for index, filtered_word in enumerate(filtered_vocabualary):
             nearest = self.model.most_common_words.get(filtered_word, None)
             if nearest is not None:
@@ -115,7 +114,6 @@ def do_print_most_common_words():
     for item in most_common_words:
         print (item)
 
-
 def test_analyser():
     analyser = QuestionAnalyser()
     with open("questions.csv", 'rt', encoding="utf8") as csvfile:
@@ -130,7 +128,6 @@ def test_analyser():
                 break
             counter +=1 
         print ("Total valid: ", valid)
-
 
 def test_nltk():
     model = Word2VecModel()    
