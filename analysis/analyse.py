@@ -21,7 +21,7 @@ import tensorflow as tf
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
-from models import SkippGramVocabulary
+from models import SkippGramVocabulary, VocabularyQueston
 from meta import db_session
 from sqlalchemy import desc
 from analysis.word2vec_model import Word2VecModel
@@ -104,6 +104,15 @@ def do_analyse():
 def do_validate():
     model = Word2VecModel()
     model.validate_examples()
+
+def load_questions():
+    with open("questions.csv", 'rt', encoding="utf8") as csvfile:
+        csv_reader = csv.reader(csvfile, delimiter=',')
+        for row in csv_reader:
+            _, _, _, _, body, _ = row
+            data += " " + process_text(body)
+
+    return data
 
 def do_print_most_common_words():
     model = Word2VecModel()

@@ -217,3 +217,8 @@ body {
     text-align: right;
     color: #848d95;
 }
+
+.chat-log th {
+    overflow: scroll;
+    word-break: break-all;
+}

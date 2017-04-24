@@ -149,11 +149,12 @@ class DBStaticAssessment(db.Model):
 class Word2VecModelDB(db.Model):
     __tablename__ = 'word_2_vec_model'
 
-    id = db.Column(db.Integer, primary_key=True)
-    vocabulary_id = db.Column(db.Integer, ForeignKey('skipp_gram_vocabulary.id'), nullable=False)
-    dump_filename = db.Column(String) 
+    id              = db.Column(db.Integer, primary_key=True)
+    vocabulary_id   = db.Column(db.Integer, ForeignKey('skipp_gram_vocabulary.id'), nullable=False)
+    dump_filename   = db.Column(String) 
 
-    def __init__(self, vocabulary_id, dump_filename):
+    def __init__(self, vocabulary_id, 
+            dump_filename):
         self.vocabulary_id = vocabulary_id
         self.dump_filename = dump_filename
 
@@ -163,7 +164,18 @@ class Word2VecModelDB(db.Model):
 class VocabularyQueston(db.Model):
     __tablename__ = 'vocabulary_queston'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id          = db.Column(db.Integer, primary_key=True)
+    so_id       = db.Column(db.Integer)
+    body        = db.Column(String) 
+    title       = db.Column(String) 
+    tags        = db.Column(String) 
+    score       = db.Column(db.Integer)
+    length      = db.Column(db.Integer)
+    word_count  = db.Column(db.Integer)
+    has_code    = db.Column(db.Boolean, default=True)
+    is_positive = db.Column(db.Boolean, default=True)
+    
+    question_word_count = db.Column(db.Integer)
 
     def __init__(self):
         pass
