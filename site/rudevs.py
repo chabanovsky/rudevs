@@ -11,7 +11,7 @@ sys.path.append("/development/Telethon/telethon")
 
 if sys.version_info[0] >= 3:
     from chats.telegram.telegram import WatchTelegramClient
-    from analysis.analyse import do_analyse, update_stored_data, do_validate, do_print_most_common_words, test_analyser, test_nltk
+    from analysis.analyse import do_analyse, update_stored_data, do_validate, do_print_most_common_words, test_analyser, test_nltk, load_questions
 
 from meta import *
 from views import *
@@ -49,6 +49,9 @@ if __name__ == "__main__":
             sys.exit()  
         if str(sys.argv[1]) == "--test_nltk":
             test_nltk()
+            sys.exit()  
+        if str(sys.argv[1]) == "--load_questions":
+            load_questions()
             sys.exit()  
 
     app.run()

@@ -281,7 +281,7 @@ def do_analyse():
         stmnt_id, channel_id, user_id, first_id, last_id = stmnt
         message_text = session.query(func.string_agg(TelegramTextMessage.message, 
                     aggregate_order_by(literal_column("'. '"), 
-                            TelegramTextMessage.message))).\
+                            TelegramTextMessage.created))).\
                 filter(and_(TelegramTextMessage.channel_id==channel_id, TelegramTextMessage.user_id==user_id)).\
                 filter(TelegramTextMessage.message_id.between(first_id, last_id)).\
                 distinct().\

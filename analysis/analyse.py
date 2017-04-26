@@ -27,7 +27,7 @@ from sqlalchemy import desc
 from analysis.word2vec_model import Word2VecModel
 from analysis.rules import RuleAnalyser
 from analysis.question_words import QuestionWords
-from analysis.utils import filter_noise, process_text
+from analysis.utils import filter_noise, process_text, process_code, print_progress_bar
 from analysis.static_assessment import StaticAssessment
 
 class QuestionAnalyser():
@@ -105,14 +105,58 @@ def do_validate():
     model = Word2VecModel()
     model.validate_examples()
 
-def load_questions():
+def load_questions(check_existence=False):
+    question_words_checker = QuestionWords()
+    session = db_session()
+
     with open("questions.csv", 'rt', encoding="utf8") as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
-            _, _, _, _, body, _ = row
-            data += " " + process_text(body)
+            so_id, score, answer_count, title, body, tags = row
+            length = len(body)
+            processed_body = tf.compat.as_str(process_text(body, True, 2))
+            code_words = tf.compat.as_str(process_code(body))
+            filtered_vocabualary = processed_body.split()
+            tags = tags.replace('|', " ")
+            word_count = len(filtered_vocabualary)
+            question_words = ""
+            for word in filtered_vocabualary:
+                if question_words_checker.is_question_word(word):
+                    question_words += " " + word
+            
+            if check_existence:
+                voc_qstn = VocabularyQueston.query.filter_by(so_id=so_id).first()
+                if voc_qstn is not None:
+                    update_query = VocabularyQueston.__table__.update().values(
+                            body=body, 
+                            title=title,
+                            tags=tags,
+                            score=score,
+                            length=length,
+                            word_count=word_count,
+                            code_words=code_words,
+                            question_words=question_words).\
+                        where(VocabularyQueston.so_id==so_id)
+                    session.execute(update_query)
+                    continue
 
-    return data
+            voc_qstn = VocabularyQueston(
+                so_id, 
+                body, 
+                title, 
+                tags, 
+                score, 
+                length, 
+                word_count, 
+                question_words, 
+                processed_body,
+                code_words,
+                True)
+
+            session.add(voc_qstn)
+
+        session.commit()
+        session.close()
 
 def do_print_most_common_words():
     model = Word2VecModel()

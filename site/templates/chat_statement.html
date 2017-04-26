@@ -1,4 +1,7 @@
 {% extends "base.html" %} 
+{% block js_ext %}
+<script type="text/javascript" async="" src="/m/js/review_tools.js"></script>
+{% endblock %}
 {% block content %}
 <div>
     <h3>
@@ -17,7 +20,11 @@
                     <tr>
                         <th class="date">{{ item.created.strftime('%H%:%M | %d.%m') }}</th>
                         {% if item.message_id >= statement.first_msg_id and item.message_id <= statement.last_msg_id %}
-                            <th class="statements-message">{{ item.message }}</th>
+                            {% if item.user_id == statement.user_id %}
+                                <th class="statements-message">{{ item.message }}</th>
+                            {% else %}
+                                <th class="another-outer-message">{{ item.message }}</th>
+                            {% endif %}
                         {% else %}
                             {% if item.user_id == statement.user_id %}
                                 <th class="another-self-message">{{ item.message }}</th>
@@ -30,9 +37,17 @@
                     <tr>
                         <th class="date"></th>
                         <th class="actions">
+                            {% if (statement.is_question and not statement.false_assumption) or (not statement.is_question and statement.false_assumption) %}
                             <a class="button">Связать</a>
                             <input type="text">
-                            <a style="float:left; margin-left: 0px;" class="button">Отклонить</a>
+                            {% endif %}
+                            <a id="mark-false" style="float:left; margin-left: 0px;" class="button" href="{{ url_for('actions_mark_false', stmnt_id=statement.id) }}">
+                                {% if not statement.false_assumption %}
+                                    Отклонить
+                                {% else %}
+                                    Подтвердить
+                                {% endif  %}
+                            </a>
                         </th>
                     </tr>
                     {% endif %}

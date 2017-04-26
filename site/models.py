@@ -172,13 +172,34 @@ class VocabularyQueston(db.Model):
     score       = db.Column(db.Integer)
     length      = db.Column(db.Integer)
     word_count  = db.Column(db.Integer)
-    has_code    = db.Column(db.Boolean, default=True)
+    code_words  = db.Column(String) 
     is_positive = db.Column(db.Boolean, default=True)
     
-    question_word_count = db.Column(db.Integer)
+    filtered_words = db.Column(db.String) 
+    question_words = db.Column(db.String)
 
-    def __init__(self):
-        pass
+    def __init__(self, so_id, 
+            body, 
+            title, 
+            tags, 
+            score, 
+            length, 
+            word_count, 
+            question_words,
+            filtered_words, 
+            code_words,
+            is_positive):
+        self.so_id      = so_id
+        self.body       = body
+        self.title      = title
+        self.tags       = tags
+        self.score      = score
+        self.length     = length
+        self.word_count = word_count
+        self.is_positive= is_positive
+        self.code_words = code_words
+        self.question_words = question_words
+        self.filtered_words = filtered_words
 
     def __repr__(self):
         return '<VQues %r>' % str(self.id)

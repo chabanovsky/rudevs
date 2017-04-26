@@ -60,3 +60,29 @@ def chat_statement(stmnt_id):
     if statement is None:
         abort(404)
     return render_template('chat_statement.html', statement=statement)
+
+@application.route("/actions/mark_false/<stmnt_id>", endpoint="actions_mark_false")
+@application.route("/actions/mark_false/<stmnt_id>/", endpoint="actions_mark_false")
+def actions_mark_false(stmnt_id):
+    statement = Statement.query.filter_by(id=stmnt_id).first()
+    if statement is None:
+        abort(404)
+    
+    session = db_session()
+    
+    update_query = Statement.__table__.update().\
+            values(false_assumption=(not statement.false_assumption)).\
+            where(Statement.id==stmnt_id)
+    session.execute(update_query)
+    session.commit()
+    session.close()
+
+    resp = {
+        "status": True,
+        "msg": "OK",
+        "stmnt_id": stmnt_id,
+        "false_assumption": not statement.false_assumption
+    }    
+
+    return jsonify(**resp)
+    

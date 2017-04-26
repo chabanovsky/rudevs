@@ -20,12 +20,14 @@ def generate_string(eval_ctx, localized_value):
 def current_language():
     return LANGUAGE
 
+# Here there is an issue. We have to order TelegramTextMessages by creation time.
+# Otherwise we glue posted sentences in the reverse order.
 def statement_messages(statement):
     session = db_session()
 
     message_text = session.query(func.string_agg(TelegramTextMessage.message, 
                 aggregate_order_by(literal_column("'. '"), 
-                        TelegramTextMessage.message))).\
+                        TelegramTextMessage.created))).\
             filter(and_(TelegramTextMessage.channel_id==statement.channel_id,
                     TelegramTextMessage.user_id==statement.user_id)).\
             filter(TelegramTextMessage.message_id.between(statement.first_msg_id, 
