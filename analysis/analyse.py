@@ -21,11 +21,11 @@ import tensorflow as tf
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
-from sqlalchemy import desc, and_, asc
+from sqlalchemy import desc, and_, or_, asc
 from sqlalchemy.sql import func, literal_column, update
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 
-from models import SkippGramVocabulary, VocabularyQueston, Statement, TelegramTextMessage, NegativeExample
+from models import SkippGramVocabulary, VocabularyQueston, Statement, TelegramTextMessage, NegativeExample, TelegramChannel
 from meta import db_session, MINIMIM_QUESTION_LENGHT
 from analysis.word2vec_model import Word2VecModel
 from analysis.rules import RuleAnalyser
@@ -177,6 +177,66 @@ def do_auto_review():
     stmt = update(Statement).where(Statement.id.in_(query)).values(reviewed=True, is_question=False, false_assumption=False)
     
     session.execute(stmt)
+    session.commit()
+    session.close()
+
+def genereate_negative_examples(check_existence=True):
+    question_words_checker = QuestionWords()
+    session = db_session()
+
+    query = session.query(Statement.id.label('statement_id'), func.string_agg(TelegramTextMessage.message, 
+                aggregate_order_by(literal_column("'. '"), 
+                        TelegramTextMessage.created)).label('agg_message')).\
+            filter(Statement.reviewed==True).\
+            filter(Statement.is_question==Statement.false_assumption).\
+            filter(and_(TelegramTextMessage.channel_id==Statement.channel_id, TelegramTextMessage.user_id==Statement.user_id)).\
+            filter(TelegramTextMessage.message_id.between(Statement.first_msg_id, Statement.last_msg_id)).\
+            group_by(Statement.id).\
+            subquery()
+
+    query = session.query(query.c.statement_id, query.c.agg_message, func.length(query.c.agg_message).label('len'), TelegramChannel.tags.label('tags')).\
+            outerjoin(Statement, Statement.id==query.c.statement_id).\
+            outerjoin(TelegramChannel, TelegramChannel.channel_id==Statement.channel_id).distinct()
+
+    session.close()
+    session = db_session()
+
+    for item in query.all(): 
+        filtered_words = tf.compat.as_str(process_text(item.agg_message, True, 2))   
+        filtered_vocabualary = filtered_words.split()   
+        word_count = len(filtered_vocabualary)
+        code_words = tf.compat.as_str(process_code(item.agg_message))
+        
+        question_words = ""
+        for word in filtered_vocabualary:
+            if question_words_checker.is_question_word(word):
+                question_words += " " + word
+
+        if check_existence:
+            voc_qstn = NegativeExample.query.filter_by(statement_id=item.statement_id).first()
+            if voc_qstn is not None:
+                update_query = NegativeExample.__table__.update().values(
+                        body=item.agg_message, 
+                        tags=item.tags,
+                        length=item.len,
+                        word_count=word_count,
+                        code_words=code_words,
+                        filtered_words=filtered_words,
+                        question_words=question_words).\
+                    where(NegativeExample.statement_id==item.statement_id)
+                session.execute(update_query)
+                continue
+
+        neg = NegativeExample(item.agg_message, 
+                item.tags, 
+                item.len,
+                word_count,
+                question_words,
+                filtered_words, 
+                code_words, 
+                item.statement_id)
+        session.add(neg)
+
     session.commit()
     session.close()
 
