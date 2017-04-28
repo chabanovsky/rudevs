@@ -20,6 +20,7 @@ def make_db_engine():
 LANGUAGE = "ru" # os.environ["LOCALE_LANGUAGE_NAME"]
 APP_URL = "http://rudevs.ru"
 DB_NAME = "rudevs"
+MINIMIM_QUESTION_LENGHT = 30
 
 app = Flask(__name__)
 

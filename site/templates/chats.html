@@ -1,24 +1,48 @@
 {% extends "base.html" %} 
+{% block js_ext %}
+<script type="text/javascript" async="" src="/m/js/review_tools.js"></script>
+{% endblock %}
 {% block content %}
 <div>
     <h3>Telegram Channels</h3>
+    <div class="main-menu">
+        <div id="tabs">
+            <a {% if "are_questions" in active_tab  %}class="active"{% endif %} href="{{ url_for('chats') }}">Вопросы</a>
+            <a {% if "not_questions" in active_tab  %}class="active"{% endif %} href="{{ url_for('chats_not_questions') }}">Не вопросы</a>
+            <a {% if "reviewed" in active_tab  %}class="active"{% endif %} href="{{ url_for('chats_reviewed') }}">Проверенные</a>
+        </div>
+    </div>
+
     {% for item in paginator.items %}
     <p>
         <div class="statement-box">
             <div class="statement">
                 {{ statement_messages(item) }}
             </div>
+            <div class="statement-info">
+                {% set channel = stmnt_channel_info(item) %}
+                <span>{{ item.created.strftime('%H%:%M  %d.%m') }}</span>
+                <span> | </span>
+                <span class="channel-name"><a target="_blank" href="https://web.telegram.org/#/im?p=@{{ channel.username }}">@{{ channel.username }}</a></span>
+                <span> | </span>
+                <span class="channel-title">{{ channel.title }}</span>
+            </div>
             <div class="statement-actions">
-                <div class="statement-info">
-                    {% set channel = stmnt_channel_info(item) %}
-                    <span>{{ item.created.strftime('%H%:%M  %d.%m') }}</span>
-                    <span> | </span>
-                    <span class="channel-name"><a target="_blank" href="https://web.telegram.org/#/im?p=@{{ channel.username }}">@{{ channel.username }}</a></span>
-                    <span> | </span>
-                    <span class="channel-title">{{ channel.title }}</span>
-                </div>
                 <a class="button" href="{{ url_for('chat_statement', stmnt_id=item.id) }}">Подробнее</a>
-                <a class="button">Отклонить</a>
+                <a class="review button" href="{{ url_for('actions_review', stmnt_id=item.id) }}">
+                {% if not item.reviewed %}
+                    Подтвердить
+                {% else %}
+                    Подтвердить (отмена)
+                {% endif  %}
+                </a>
+                <a class="mark-false button" href="{{ url_for('actions_mark_false', stmnt_id=item.id) }}">
+                {% if not item.false_assumption %}
+                    Не верно
+                {% else %}
+                    Не верно (отменить)
+                {% endif  %}
+                </a>
             </div>
         </div>
     </p>

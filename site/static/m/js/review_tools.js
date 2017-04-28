@@ -1,19 +1,45 @@
-var markFalseId = "#mark-false";
+var markFalseClass = ".mark-false";
+var reviewClass = ".review";
+var extendClass = ".extend";
 
 $(document).ready(function() {
-    $(markFalseId).click(function(event){
+    $(markFalseClass).click(function(event){
         event.preventDefault();
         href = event.target.href;
+
         loadHelper(href, function(data){
-            alert("Statement was marked. Current status: " + data.false_assumption);
-            if (document.referrer != document.URL)
-                window.location.href = document.referrer;
-            else 
-                window.location.href = "/";
+            window.location.reload();
         }, function(){
             alert("Cannot send mark false request.");
         })
 
         return false;
     });
+
+    $(reviewClass).click(function(event){
+        event.preventDefault();
+        href = event.target.href;
+
+        loadHelper(href, function(data){
+            window.location.reload();
+        }, function(){
+            alert("Cannot send review request.");
+        })
+
+        return false;
+    });
+
+    $(extendClass).click(function(event){
+        event.preventDefault();
+        href = event.target.href;
+
+        loadHelper(href, function(data){
+            window.location.reload();
+        }, function(){
+            alert("Cannot send extend request.");
+        })
+
+        return false;
+    });    
+    
 })

@@ -35,8 +35,12 @@ def statement_messages(statement):
             distinct().\
             all()   
 
-    message_text = ''.join(message_text[0])        
     session.close()
+
+    if len(message_text) > 0 and message_text[0] is not None:
+        message_text = ''.join(message_text[0])        
+    else:
+        message_text = ""
 
     return message_text
 

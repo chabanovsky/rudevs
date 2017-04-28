@@ -7,6 +7,14 @@
     <h3>
         <div class="statement-info" style="width: 100%; font-size: 16px; padding-bottom: 20px;">
             {% set channel = stmnt_channel_info(statement) %}
+            <span class="type">
+                {% if statement.is_question %}
+                    Вопрос
+                {% else %}
+                    Не вопрос
+                {% endif %}
+            </span>
+            <span> | </span>
             <span class="channel-name"><a target="_blank" href="https://web.telegram.org/#/im?p=@{{ channel.username }}">@{{ channel.username }}</a></span>
             <span> | </span>
             <span class="channel-title">{{ channel.title }}</span>
@@ -37,17 +45,24 @@
                     <tr>
                         <th class="date"></th>
                         <th class="actions">
-                            {% if (statement.is_question and not statement.false_assumption) or (not statement.is_question and statement.false_assumption) %}
-                            <a class="button">Связать</a>
-                            <input type="text">
-                            {% endif %}
-                            <a id="mark-false" style="float:left; margin-left: 0px;" class="button" href="{{ url_for('actions_mark_false', stmnt_id=statement.id) }}">
+                            <a style="float:left; margin-left: 0px;" class="mark-false button" href="{{ url_for('actions_mark_false', stmnt_id=statement.id) }}">
                                 {% if not statement.false_assumption %}
-                                    Отклонить
+                                    Не верно
                                 {% else %}
-                                    Подтвердить
+                                    Не верно (отмена)
                                 {% endif  %}
                             </a>
+                            <a class="review button" href="{{ url_for('actions_review', stmnt_id=statement.id) }}">
+                                {% if not statement.reviewed %}
+                                    Подтвердить
+                                {% else %}
+                                    Подтвердить (отмена)
+                                {% endif  %}
+                            </a>
+                            <a class="extend button" href="{{ url_for('actions_extend_statement', stmnt_id=statement.id) }}?action=1">+1 В</a>
+                            <a class="extend button" href="{{ url_for('actions_extend_statement', stmnt_id=statement.id) }}?action=-1">-1 В</a>
+                            <a class="extend button" href="{{ url_for('actions_extend_statement', stmnt_id=statement.id) }}?action=2">+1 Н</a>
+                            <a class="extend button" href="{{ url_for('actions_extend_statement', stmnt_id=statement.id) }}?action=-2">-1 Н</a>
                         </th>
                     </tr>
                     {% endif %}

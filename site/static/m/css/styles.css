@@ -31,6 +31,48 @@ body {
     height: auto;
 }
 
+#tabs {
+    float: left; 
+}
+
+#tabs a {
+    position: relative;
+    padding: 13px 10px;
+    background-color: #FFF;
+    border: 1px solid transparent;
+    font-size: 12px;
+    float: left;
+    margin-right: 8px;
+    color: #848d95;
+    line-height: 1;
+    text-decoration: none;
+    transition: all .15s ease-in-out;
+}
+
+#tabs a.active {
+    padding-bottom: 14px;
+    font-weight: 400;
+    border-color: #e4e6e8;
+    border-bottom-color: transparent;
+    color: #242729;
+}
+
+.main-menu h3 {
+    color: #242729;
+    font-size: 18px;
+    line-height: 0.22;
+    float: left;
+    margin-bottom: 0;
+    font-weight: normal;
+}
+
+.main-menu {
+    clear: both;
+    margin-bottom: 10px;
+    height: 40px;
+    border-bottom: 1px solid #e4e6e8;
+}
+
 .button {
     white-space: nowrap;
     color: #FFF;
@@ -162,9 +204,9 @@ body {
 
 .chat-log .actions .button,
 .statement-box .button {
-    font-size: 13px;
-    float: right;
-    margin-left: 15px;
+    font-size: 11px;
+    float: left;
+    margin-right: 5px;
 }
 
 .statement-info {
@@ -176,7 +218,6 @@ body {
     color: #848d95;
     line-height: 1;
     text-decoration: none;
-    width: 400px;
 }
 
 .statement-info a {

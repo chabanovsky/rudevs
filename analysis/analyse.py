@@ -21,9 +21,12 @@ import tensorflow as tf
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
-from models import SkippGramVocabulary, VocabularyQueston
-from meta import db_session
-from sqlalchemy import desc
+from sqlalchemy import desc, and_, asc
+from sqlalchemy.sql import func, literal_column, update
+from sqlalchemy.dialects.postgresql import aggregate_order_by
+
+from models import SkippGramVocabulary, VocabularyQueston, Statement, TelegramTextMessage, NegativeExample
+from meta import db_session, MINIMIM_QUESTION_LENGHT
 from analysis.word2vec_model import Word2VecModel
 from analysis.rules import RuleAnalyser
 from analysis.question_words import QuestionWords
@@ -158,6 +161,25 @@ def load_questions(check_existence=False):
         session.commit()
         session.close()
 
+def do_auto_review():
+    session = db_session()
+
+    subquery = session.query(Statement.id.label('statement_id'), func.length(func.string_agg(TelegramTextMessage.message, 
+                aggregate_order_by(literal_column("'. '"), 
+                        TelegramTextMessage.created))).label('agg_message')).\
+            filter(Statement.reviewed==False).\
+            filter(and_(TelegramTextMessage.channel_id==Statement.channel_id, TelegramTextMessage.user_id==Statement.user_id)).\
+            filter(TelegramTextMessage.message_id.between(Statement.first_msg_id, Statement.last_msg_id)).\
+            group_by(Statement.id).\
+            subquery()
+
+    query = session.query(subquery.c.statement_id).filter(subquery.c.agg_message<MINIMIM_QUESTION_LENGHT).subquery()
+    stmt = update(Statement).where(Statement.id.in_(query)).values(reviewed=True, is_question=False, false_assumption=False)
+    
+    session.execute(stmt)
+    session.commit()
+    session.close()
+
 def do_print_most_common_words():
     model = Word2VecModel()
     model.upload_dataset()
@@ -193,6 +215,4 @@ def test_nltk():
     print (analyser.common_words)
     print ("-------------------")
     print (analyser.rules)
-    
-
     

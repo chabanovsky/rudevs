@@ -20,13 +20,15 @@ class Statement(db.Model):
     was_processed   = db.Column(db.Boolean, default=False)
     is_question     = db.Column(db.Boolean, default=False)
     false_assumption= db.Column(db.Boolean, default=False)
+    reviewed        = db.Column(db.Boolean, default=False)
 
     def __init__(self, channel_id, 
             user_id, 
             first_msg_id,
             created=datetime.datetime.now(),
             is_question=False,
-            was_processed=False):
+            was_processed=False,
+            reviewed=False):
         self.channel_id     = channel_id
         self.user_id        = user_id
         self.first_msg_id   = first_msg_id
@@ -35,6 +37,7 @@ class Statement(db.Model):
         self.updated        = created
         self.is_question    = is_question 
         self.was_processed  = was_processed
+        self.reviewed       = reviewed
 
     def __repr__(self):
         return '<Stmnt %r>' % str(self.id)
@@ -46,6 +49,7 @@ class TelegramChannel(db.Model):
     channel_id  = db.Column(db.BigInteger)
     title       = db.Column(db.String)
     username    = db.Column(db.String)
+    tags        = db.Column(db.String)
     access_hash = db.Column(db.BigInteger)
 
     def __init__(self, channel_id, 
@@ -173,7 +177,6 @@ class VocabularyQueston(db.Model):
     length      = db.Column(db.Integer)
     word_count  = db.Column(db.Integer)
     code_words  = db.Column(String) 
-    is_positive = db.Column(db.Boolean, default=True)
     
     filtered_words = db.Column(db.String) 
     question_words = db.Column(db.String)
@@ -187,8 +190,7 @@ class VocabularyQueston(db.Model):
             word_count, 
             question_words,
             filtered_words, 
-            code_words,
-            is_positive):
+            code_words):
         self.so_id      = so_id
         self.body       = body
         self.title      = title
@@ -196,10 +198,44 @@ class VocabularyQueston(db.Model):
         self.score      = score
         self.length     = length
         self.word_count = word_count
-        self.is_positive= is_positive
         self.code_words = code_words
         self.question_words = question_words
         self.filtered_words = filtered_words
 
     def __repr__(self):
         return '<VQues %r>' % str(self.id)
+
+class NegativeExample(db.Model):
+    __tablename__ = 'negative_example'
+
+    id          = db.Column(db.Integer, primary_key=True)
+    statement_id= db.Column(db.Integer, ForeignKey('statement.id'), nullable=True)
+    body        = db.Column(String) 
+    tags        = db.Column(String) 
+    length      = db.Column(db.Integer)
+    word_count  = db.Column(db.Integer)
+    code_words  = db.Column(String) 
+    
+    filtered_words = db.Column(db.String) 
+    question_words = db.Column(db.String)
+
+    def __init__(self, body,  
+            tags, 
+            length, 
+            word_count, 
+            question_words,
+            filtered_words, 
+            code_words, statement_id=None):
+        self.body       = body
+        self.tags       = tags
+        self.length     = length
+        self.word_count = word_count
+        self.code_words = code_words
+        self.question_words = question_words
+        self.filtered_words = filtered_words
+        if statement_id is not None:
+            self.statement_id = statement_id
+
+    def __repr__(self):
+        return '<NegExemple %r>' % str(self.id)
+
