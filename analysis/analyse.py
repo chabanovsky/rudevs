@@ -69,10 +69,12 @@ class QuestionAnalyser():
             return False
 
         keywords = list()
+        keywords_count = 0
 
         for index, filtered_word in enumerate(filtered_vocabualary):
             nearest = self.model.most_common_words.get(filtered_word, None)
             if nearest is not None:
+                keywords_count += 1
                 sub_array = filtered_word[min(0, index-self.model.skip_window):min(filtered_vocabualary_size-1, index+self.model.skip_window)]
                 items_found = len(set(sub_array).intersection(nearest))
                 if items_found >= self.context_word_threshold:
@@ -80,8 +82,8 @@ class QuestionAnalyser():
                 
                 keywords.append(nearest)
         
-        if len(keywords) >= filtered_vocabualary_size // 3:
-            print (question_str.strip(), " [valid: most frequent words (", len(keywords) ,"/", filtered_vocabualary_size // 3 , ")] total common: ", len(self.model.most_common_words))            
+        if (keywords_count >= filtered_vocabualary_size // 3) and (len(keywords) >= keywords_count*self.context_word_threshold):
+            print (question_str.strip(), " [valid: most frequent words (kc: ", keywords_count, ", len: ", len(keywords) ,"/", filtered_vocabualary_size // 3 , ")] total common: ", len(self.model.most_common_words))            
             return True
 
         print ("[Not valid/Not defined]")

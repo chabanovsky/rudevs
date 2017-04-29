@@ -181,6 +181,16 @@ def actions_extend_statement(stmnt_id,):
 
     session.execute(update_query)
     session.commit()
+
+    to_delete = Statement.query.\
+            filter(Statement.user_id==statement.user_id, Statement.channel_id==statement.channel_id).\
+            filter(and_(
+                Statement.first_msg_id>=first_id, 
+                Statement.last_msg_id<=last_id)).\
+            filter(Statement.id!=stmnt_id).\
+            distinct()
+            
+
     session.close()
 
     resp = {
