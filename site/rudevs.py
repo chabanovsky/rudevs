@@ -11,7 +11,7 @@ sys.path.append("/development/Telethon/telethon")
 
 if sys.version_info[0] >= 3:
     from chats.telegram.telegram import WatchTelegramClient
-    from analysis.analyse import do_analyse, update_stored_data, do_validate, do_print_most_common_words, test_analyser, test_nltk, load_questions, do_auto_review, genereate_negative_examples
+    from analysis.analyse import do_analyse, update_stored_data, do_validate, do_print_most_common_words, test_analyser, test_nltk, load_questions, do_auto_review, genereate_negative_examples, upload_big_questions, train_tfidf, validate_tfidf, train_tfidf_conv, validate_tfidf_conv
 
 from meta import *
 from views import *
@@ -59,6 +59,20 @@ if __name__ == "__main__":
         if str(sys.argv[1]) == "--genereate_negative_examples":
             genereate_negative_examples()
             sys.exit()  
-            
+        if str(sys.argv[1]) == "--upload_big_questions":
+            upload_big_questions()
+            sys.exit()  
+        if str(sys.argv[1]) == "--train_tfidf":
+            train_tfidf()
+            sys.exit()  
+        if str(sys.argv[1]) == "--validate_tfidf":
+            validate_tfidf()
+            sys.exit()  
+        if str(sys.argv[1]) == "--train_tfidf_conv":
+            train_tfidf_conv()
+            sys.exit()  
+        if str(sys.argv[1]) == "--validate_tfidf_conv":
+            validate_tfidf_conv()
+            sys.exit()              
 
     app.run()

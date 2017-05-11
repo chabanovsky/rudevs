@@ -1,8 +1,12 @@
 import datetime
+import collections
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, ColumnDefault
+from sqlalchemy import and_, or_, desc
+from sqlalchemy.sql import func, literal_column
+from sqlalchemy.dialects.postgresql import aggregate_order_by
 
-from meta import app as application, db
+from meta import app as application, db, db_session
 
 class Statement(db.Model):
     __tablename__ = 'statement'
@@ -180,6 +184,7 @@ class VocabularyQueston(db.Model):
     
     filtered_words = db.Column(db.String) 
     question_words = db.Column(db.String)
+    is_negative = db.Column(db.Boolean, default=True)
 
     def __init__(self, so_id, 
             body, 
@@ -190,7 +195,8 @@ class VocabularyQueston(db.Model):
             word_count, 
             question_words,
             filtered_words, 
-            code_words):
+            code_words,
+            is_negative):
         self.so_id      = so_id
         self.body       = body
         self.title      = title
@@ -201,9 +207,133 @@ class VocabularyQueston(db.Model):
         self.code_words = code_words
         self.question_words = question_words
         self.filtered_words = filtered_words
+        self.is_negative    = is_negative
 
     def __repr__(self):
         return '<VQues %r>' % str(self.id)
+
+    @staticmethod
+    def update_or_create(session, so_id, 
+            body, 
+            title, 
+            tags, 
+            score, 
+            length, 
+            word_count, 
+            question_words,
+            filtered_words, 
+            code_words,
+            is_negative):
+
+        if session is None:
+            local_session = db_session()
+        
+        voc_qstn = VocabularyQueston.query.filter_by(so_id=so_id).first()
+        if voc_qstn is not None:
+            update_query = VocabularyQueston.__table__.update().values(
+                    body=body, 
+                    title=title,
+                    tags=tags,
+                    score=score,
+                    length=length,
+                    word_count=word_count,
+                    code_words=code_words,
+                    question_words=question_words).\
+                where(VocabularyQueston.so_id==so_id)
+            if session is None:
+                local_session.execute(update_query)
+                local_session.commit()
+                local_session.close()
+            else:
+                session.execute(update_query)
+
+            return
+
+        voc_qstn = VocabularyQueston(
+            so_id, 
+            body, 
+            title, 
+            tags, 
+            score, 
+            length, 
+            word_count, 
+            question_words, 
+            filtered_words,
+            code_words, 
+            is_negative)
+
+        if session is None:
+            local_session.add(voc_qstn)
+            local_session.commit()
+            local_session.close()
+        else:
+            session.add(voc_qstn)  
+
+    @staticmethod
+    def count():
+        session = db_session()
+        count = session.query(func.count(VocabularyQueston.id)).scalar()
+        session.close()
+        return count
+
+    @staticmethod
+    def all():
+        session = db_session()
+        items = session.query(VocabularyQueston).distinct().all()
+        session.close()
+        return items
+        
+    @staticmethod
+    def full_vocabualary():
+        session = db_session()
+        query = session.query(
+                    func.string_agg(VocabularyQueston.filtered_words, 
+                            aggregate_order_by(literal_column("' '"), 
+                            VocabularyQueston.id))).\
+                    filter(VocabularyQueston.is_negative==False).first()
+        session.close()
+
+        return u"%s" % str(query)
+
+class VocabualaryQuestonWrapper():
+    def __init__(self):
+        vocabualary = VocabularyQueston.full_vocabualary()
+        splited_vocabualary = str(vocabualary).split()
+        indexies, most_common, dictionary, reversed_dictionary, vocabualary_size = self.build_dataset(splited_vocabualary)
+
+        self.vocabualary        = vocabualary
+        self.splited_vocabualary= splited_vocabualary
+        self.indexies           = indexies
+        self.most_common        = most_common
+        self.dictionary         = dictionary
+        self.reversed_dictionary= reversed_dictionary
+        self.vocabualary_size   = vocabualary_size
+
+    def build_dataset(self, vocabualary):
+        count       = [['UNK', -1]]
+        dictionary  = dict()
+        indexies    = list()
+        unk_count   = 0
+
+        most_common = collections.Counter(vocabualary).most_common()
+        vocabualary_size = len(most_common)
+        count.extend(most_common)
+        
+        for word, _ in count:
+            dictionary[word] = len(dictionary)
+        
+        for word in vocabualary:
+            if word in dictionary:
+                index = dictionary[word]
+            else:
+                index = 0  # dictionary['UNK']
+                unk_count += 1
+            indexies.append(index)
+
+        count[0][1] = unk_count
+        reversed_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
+
+        return indexies, count, dictionary, reversed_dictionary, vocabualary_size    
 
 class NegativeExample(db.Model):
     __tablename__ = 'negative_example'
@@ -239,3 +369,44 @@ class NegativeExample(db.Model):
     def __repr__(self):
         return '<NegExemple %r>' % str(self.id)
 
+    @staticmethod
+    def test_data():
+        session = db_session()
+        query = session.query(NegativeExample).join(Statement, NegativeExample.statement_id==Statement.id).\
+                filter(and_(Statement.reviewed==True, Statement.false_assumption==True)).\
+                distinct().\
+                all()
+        session.close()
+        return query        
+
+
+class TFModel(db.Model):
+    __tablename__ = 'tf_model'
+
+    id              = db.Column(db.Integer, primary_key=True)
+    model_name      = db.Column(db.String) 
+    dump_filename   = db.Column(db.String) 
+
+    def __init__(self, model_name, 
+            dump_filename):
+        self.model_name = model_name
+        self.dump_filename = dump_filename
+
+    def __repr__(self):
+        return '<TFModel %r>' % str(self.id)
+
+    @staticmethod
+    def get_last(model_name):
+        session = db_session()
+        query = session.query(TFModel).filter(TFModel.model_name==model_name).order_by(desc(TFModel.id)).first()
+        session.close()
+
+        return query.dump_filename
+
+    @staticmethod
+    def create_one(model_name, dump_filename):
+        session = db_session()
+        model = TFModel(model_name, dump_filename)
+        session.add(model)
+        session.commit()
+        session.close()        

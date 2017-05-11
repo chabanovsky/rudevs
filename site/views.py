@@ -188,15 +188,16 @@ def actions_extend_statement(stmnt_id,):
                 Statement.first_msg_id>=first_id, 
                 Statement.last_msg_id<=last_id)).\
             filter(Statement.id!=stmnt_id).\
-            distinct()
-            
+            delete()
 
+    session.commit()
     session.close()
 
     resp = {
         "status": True,
         "msg": "OK",
-        "stmnt_id": stmnt_id
+        "stmnt_id": stmnt_id,
+        "deleted": to_delete
     }    
 
     return jsonify(**resp)

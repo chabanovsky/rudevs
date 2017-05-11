@@ -32,6 +32,8 @@ from analysis.rules import RuleAnalyser
 from analysis.question_words import QuestionWords
 from analysis.utils import filter_noise, process_text, process_code, print_progress_bar
 from analysis.static_assessment import StaticAssessment
+from analysis.negative_examples import BigQuestion
+from analysis.tf_idf import TfIdfModel, TfIdfConvModel
 
 class QuestionAnalyser():
     question_words = QuestionWords()
@@ -52,7 +54,9 @@ class QuestionAnalyser():
 
         if text_length < self.static_assessment.mimimum_question_length or \
                 text_length > self.static_assessment.maximum_question_length:
-            print ("[not valid: text_length(", text_length, ")]")   
+            print ("[not valid: text_length(", text_length, "), min(", 
+                    self.static_assessment.mimimum_question_length, "), max(",
+                    self.static_assessment.maximum_question_length,")]")   
             return False
 
         filtered_vocabualary = process_text(text, extended_filter=True, word_len_threshold=2)
@@ -61,7 +65,10 @@ class QuestionAnalyser():
 
         if filtered_vocabualary_size < self.static_assessment.mimimum_question_word_count or \
                 filtered_vocabualary_size > self.static_assessment.maximum_question_word_count:
-            print ("[not valid: filtered_vocabualary_size (", filtered_vocabualary_size, ")]")            
+            print ("[not valid: filtered_vocabualary_size (", 
+                    filtered_vocabualary_size, "), min (", 
+                    self.static_assessment.mimimum_question_word_count, "), max (", 
+                    self.static_assessment.maximum_question_word_count, ")]")            
             return False
 
         if not self.has_question_words(filtered_vocabualary):
@@ -75,18 +82,17 @@ class QuestionAnalyser():
             nearest = self.model.most_common_words.get(filtered_word, None)
             if nearest is not None:
                 keywords_count += 1
-                sub_array = filtered_word[min(0, index-self.model.skip_window):min(filtered_vocabualary_size-1, index+self.model.skip_window)]
-                items_found = len(set(sub_array).intersection(nearest))
-                if items_found >= self.context_word_threshold:
-                    keywords.append(filtered_word)
-                
-                keywords.append(nearest)
+                min_index = max(0, index-self.model.skip_window)
+                max_index = min(filtered_vocabualary_size-1, index+self.model.skip_window)
+                sub_array = filtered_vocabualary[min_index:max_index]
+                inter_sub_array = set(sub_array).intersection(nearest)
+                keywords.extend(inter_sub_array)
         
-        if (keywords_count >= filtered_vocabualary_size // 3) and (len(keywords) >= keywords_count*self.context_word_threshold):
+        if (keywords_count >= filtered_vocabualary_size // 3) and (len(keywords) >= keywords_count//self.context_word_threshold):
             print (question_str.strip(), " [valid: most frequent words (kc: ", keywords_count, ", len: ", len(keywords) ,"/", filtered_vocabualary_size // 3 , ")] total common: ", len(self.model.most_common_words))            
             return True
 
-        print ("[Not valid/Not defined]")
+        print ("[Not valid/Not defined] keywords_count: ", keywords_count, ", filtered_vocabualary_size // 3: ", filtered_vocabualary_size // 3, ", len(keywords): ", len(keywords))
         return False
 
     def has_question_words(self, vocabualary):
@@ -110,7 +116,7 @@ def do_validate():
     model = Word2VecModel()
     model.validate_examples()
 
-def load_questions(check_existence=False):
+def load_questions(check_existence=True):
     question_words_checker = QuestionWords()
     session = db_session()
 
@@ -128,24 +134,7 @@ def load_questions(check_existence=False):
             for word in filtered_vocabualary:
                 if question_words_checker.is_question_word(word):
                     question_words += " " + word
-            
-            if check_existence:
-                voc_qstn = VocabularyQueston.query.filter_by(so_id=so_id).first()
-                if voc_qstn is not None:
-                    update_query = VocabularyQueston.__table__.update().values(
-                            body=body, 
-                            title=title,
-                            tags=tags,
-                            score=score,
-                            length=length,
-                            word_count=word_count,
-                            code_words=code_words,
-                            question_words=question_words).\
-                        where(VocabularyQueston.so_id==so_id)
-                    session.execute(update_query)
-                    continue
-
-            voc_qstn = VocabularyQueston(
+            VocabularyQueston.update_or_create(session,
                 so_id, 
                 body, 
                 title, 
@@ -155,10 +144,8 @@ def load_questions(check_existence=False):
                 word_count, 
                 question_words, 
                 processed_body,
-                code_words,
-                True)
-
-            session.add(voc_qstn)
+                code_words, 
+                False)
 
         session.commit()
         session.close()
@@ -261,10 +248,35 @@ def test_analyser():
             _, _, _, _, body, _ = row
             if analyser.validate(body):
                 valid += 1
-            if counter == 1000:
+            if counter == 10:
                 break
             counter +=1 
         print ("Total valid: ", valid)
+
+def upload_big_questions():
+    big = BigQuestion()
+    big.process()
+
+def train_tfidf():
+    model = TfIdfModel()
+    model.train()
+    model.validate_model()
+
+def validate_tfidf():   
+    model = TfIdfModel()
+    model.restore_last() 
+    model.validate_model()
+
+def train_tfidf_conv():
+    model = TfIdfConvModel()
+    model.train()
+    model.validate_model()    
+
+def validate_tfidf_conv():   
+    model = TfIdfConvModel()
+    model.restore_last() 
+    model.validate_model()
+
 
 def test_nltk():
     model = Word2VecModel()    
