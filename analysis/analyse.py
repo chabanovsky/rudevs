@@ -271,11 +271,12 @@ def train_tfidf_conv():
     model = TfIdfConvModel()
     model.train()
     model.validate_model()    
+    model.validate_get_class()
 
 def validate_tfidf_conv():   
     model = TfIdfConvModel()
     model.restore_last() 
-    model.validate_model()
+    model.validate_get_class()
 
 
 def test_nltk():

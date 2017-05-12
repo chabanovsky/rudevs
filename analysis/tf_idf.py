@@ -13,6 +13,7 @@ import tensorflow as tf
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from models import VocabularyQueston, VocabualaryQuestonWrapper, NegativeExample, TFModel
+from analysis.utils import process_text
 
 class TfIdfData():
     def __init__(self, vocabualary_size=None):
@@ -36,12 +37,14 @@ class TfIdfData():
 
         for document in self.documents:
             self.texts.append(tf.compat.as_str(document.filtered_words))
-            first_class = 0 if document.is_negative else 1
-            second_class = 1 if document.is_negative else 0
-            self.labels = np.append(self.labels, [[first_class, second_class]], axis=0)
+            negative = 1 if document.is_negative else 0
+            positive = 0 if document.is_negative else 1
+            self.labels = np.append(self.labels, [[negative, positive]], axis=0)
 
         self.tfidf = TfidfVectorizer(tokenizer=lambda text: text.split(), max_features=self.max_features)
         self.sparse_tfidf_texts = self.tfidf.fit_transform(self.texts)
+
+        self.index = 0
     
     def make_vector(self, string):
         return self.tfidf.transform(string)
@@ -49,22 +52,67 @@ class TfIdfData():
     def get_batch(self, batch_size):
         # sparse_tfidf_texts.shape[0] - number of documents, i. e. strings.
         # sparse_tfidf_texts.shape[2] - number of features, i. e. len of vocabualary.
-        rand_index = np.random.choice(self.sparse_tfidf_texts.shape[0], size=batch_size)
+        if self.index >= self.sparse_tfidf_texts.shape[0]:
+            self.index = 0
+
+        if self.index + batch_size >= self.sparse_tfidf_texts.shape[0]:    
+            self.index = self.sparse_tfidf_texts.shape[0] - batch_size
+
+        rand_index = random.sample(range(self.index, self.index+batch_size), batch_size)
         text_batch  = self.sparse_tfidf_texts[rand_index].todense()
         label_batch = self.labels[rand_index]
+
+        self.index = self.index + batch_size
         return text_batch, label_batch
 
     def num_features(self):
         return self.max_features
 
-class TfIdfModel():
-    name = "tfidf_simple"
-    
+class TFIDFModelBase():
+    def __init__(self, data_vocabualary_size=None):
+        self.data = TfIdfData(data_vocabualary_size)
+        self.dump_filename = "dump/%s" % self.model_name()
+
+    def model_name(self):
+        raise NotImplementedError("model_name")
+
+    def restore_last(self):
+        saving_filename = TFModel.get_last(self.model_name())
+        print ("saving_filename: ", saving_filename)
+        self.declare_tf()
+
+        self.session = tf.InteractiveSession(graph=self.graph)
+        self.saver.restore(self.session, saving_filename)  
+
+    def validate_model(self):
+        documents   = NegativeExample.test_data()
+        texts       = list()
+        labels      = np.empty(shape=(0, self.data.num_classes))
+
+        print("Number of documetnts to validate: ", len(documents))
+
+        for document in documents:
+            texts.append(tf.compat.as_str(document.filtered_words))
+            negative = 1 
+            positive = 0
+            labels = np.append(labels, [[negative, positive]], axis=0)
+
+        sparse_tfidf_texts = self.data.tfidf.transform(texts)
+        rand_index = np.random.choice(sparse_tfidf_texts.shape[0], size=len(documents))
+        text_batch  = sparse_tfidf_texts[rand_index].todense()
+        label_batch = labels[rand_index]     
+        return text_batch, label_batch  
+        
+
+class TfIdfModel(TFIDFModelBase):
     def __init__(self):
-        self.data = TfIdfData()
+        super(TfIdfModel, self).__init__(2)
+
         self.num_steps  = 10000
         self.batch_size = 200
-        self.dump_filename = "dump/tfidf_model"
+
+    def model_name(self):
+        return "tfidf_simple"       
 
     def train(self):
         self.declare_tf()
@@ -81,16 +129,14 @@ class TfIdfModel():
             self.session.run(self.train_step, feed_dict={self.x: text_batch, self.y_: label_batch})
 
         saving_path = self.saver.save(self.session, self.dump_filename)
-        TFModel.create_one(TfIdfModel.name, saving_path)
-        
+        TFModel.create_one(self.model_name(), saving_path)
         print ("Saved as ", saving_path)
-        return saving_path
 
     def declare_tf(self):
         self.graph = tf.Graph()
         with self.graph.as_default():
             self.x = tf.placeholder(tf.float32, [None, self.data.num_features()], name="x")
-            # We have only to classes: 1 and 0
+            # We have only two classes
             self.b = tf.Variable(tf.zeros([self.data.num_classes]), name="b")
             self.W = tf.Variable(tf.zeros([self.data.num_features(), self.data.num_classes]), name="W")
             # Calculated probability of classes
@@ -109,43 +155,21 @@ class TfIdfModel():
             
             self.saver = tf.train.Saver(tf.global_variables())
 
+
     def validate_model(self):
-        documents   = NegativeExample.test_data()
-        texts       = list()
-        labels      = np.empty(shape=(0, self.data.num_classes))
-
-        print("Number of documetnts to validate: ", len(documents))
-
-        for document in documents:
-            texts.append(tf.compat.as_str(document.filtered_words))
-            first_class = 1 
-            second_class = 0
-            labels = np.append(labels, [[first_class,second_class]], axis=0)
-
-        sparse_tfidf_texts = self.data.tfidf.transform(texts)
-        rand_index = np.random.choice(sparse_tfidf_texts.shape[0], size=len(documents))
-        text_batch  = sparse_tfidf_texts[rand_index].todense()
-        label_batch = labels[rand_index]
-
+        text_batch, label_batch = super(TfIdfModel, self).validate_model()
         print(self.session.run(self.accuracy, feed_dict={self.x: text_batch,
-                                    self.y_: label_batch}))
-    def restore_last(self):
-        saving_filename = TFModel.get_last(TfIdfModel.name)
-        print ("saving_filename: ", saving_filename)
-        self.declare_tf()
+                                    self.y_: label_batch}))      
 
-        self.session = tf.InteractiveSession(graph=self.graph)
-        self.saver.restore(self.session, saving_filename)
-
-
-class TfIdfConvModel():
-    name = "tfidf_conv"
+class TfIdfConvModel(TFIDFModelBase):
 
     def __init__(self):
-        self.data = TfIdfData(10)
+        super(TfIdfConvModel, self).__init__(10)
         self.num_steps  = 1000
-        self.batch_size = 50
-        self.dump_filename = "dump/%s" % self.name
+        self.batch_size = 30
+
+    def model_name(self):
+        return "tfidf_conv"           
 
     @staticmethod
     def weight_variable(shape, name):
@@ -175,6 +199,7 @@ class TfIdfConvModel():
         with self.graph.as_default():
             num_features = self.data.num_features()
             num_classes = self.data.num_classes
+            # Some of authors call this variable "number of channels"
             num_features_to_consider = 32
             window_size = 5
             # We want to
@@ -206,7 +231,7 @@ class TfIdfConvModel():
             ###########################
             # Second layer
             ###########################
-            self.W_conv2 = self.weight_variable([5, 5, num_features_to_consider, num_features_to_consider * 2], "W_conv2")
+            self.W_conv2 = self.weight_variable([window_size, window_size, num_features_to_consider, num_features_to_consider * 2], "W_conv2")
             self.b_conv2 = self.bias_variable([num_features_to_consider * 2], "b_conv2")
 
             self.h_conv2 = tf.nn.relu(self.conv2d(self.h_pool1, self.W_conv2, name="h_conv2") + self.b_conv2)
@@ -246,17 +271,13 @@ class TfIdfConvModel():
             self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name="accuracy")
 
             self.saver = tf.train.Saver(tf.global_variables())
-            
 
     def train(self):
         self.declare_tf()
-        print ("Before init")
         with self.graph.as_default():
             init = tf.global_variables_initializer()
-        print ("Inited vars")
         self.session = tf.InteractiveSession(graph=self.graph)
         init.run()
-        print("Run...")
 
         for step in range(self.num_steps):
             if (step % 100) == 0:
@@ -266,46 +287,34 @@ class TfIdfConvModel():
             self.session.run(self.train_step, feed_dict={self.x: text_batch, self.y_: label_batch, self.keep_prob: 0.5})
 
         saving_path = self.saver.save(self.session, self.dump_filename)
-        TFModel.create_one(self.name, saving_path)    
+        TFModel.create_one(self.model_name(), saving_path)    
         
         print ("Saved as ", saving_path)
-        return saving_path
-
-    def restore_last(self):
-        saving_filename = TFModel.get_last(TfIdfConvModel.name)
-        print ("saving_filename: ", saving_filename)
-        self.declare_tf()
-
-        self.session = tf.InteractiveSession(graph=self.graph)
-        self.saver.restore(self.session, saving_filename)
-
 
     def validate_model(self):
-        documents   = NegativeExample.test_data()
-        texts       = list()
-        labels      = np.empty(shape=(0, self.data.num_classes))
-
-        print("Number of documetnts to validate: ", len(documents))
-
-        for document in documents:
-            texts.append(tf.compat.as_str(document.filtered_words))
-            first_class = 1 
-            second_class = 0
-            labels = np.append(labels, [[first_class,second_class]], axis=0)
-
-        sparse_tfidf_texts = self.data.tfidf.transform(texts)
-        rand_index = np.random.choice(sparse_tfidf_texts.shape[0], size=len(documents))
-        text_batch  = sparse_tfidf_texts[rand_index].todense()
-        label_batch = labels[rand_index]
+        text_batch, label_batch = super(TfIdfConvModel, self).validate_model()
 
         print(self.session.run(self.accuracy, feed_dict={self.x: text_batch,
                                     self.y_: label_batch, self.keep_prob: 1.0}))
 
-class TfIdfCNNModel():
-    name = "tfidf_cnn"
+    def validate_get_class(self):
+        documents = NegativeExample.test_data()
+        print ("---------------Test negative----------------")
+        for document in documents:
+            result = self.get_class(document.body)
+            print("IsPositive: ", result, ", document: ", document.body[:50])
 
-    def __init__(self):
-        self.data = TfIdfData(1000)
-        self.num_steps  = 1000
-        self.batch_size = 10
-        self.dump_filename = "dump/%s" % self.name                                    
+        print ("---------------Test positive----------------")
+        documents = VocabularyQueston.test_data(50)
+        for document in documents:
+            result = self.get_class(document.body)
+            print("IsPositive: ", result, ", document: ", document.body[:50])
+
+
+    def get_class(self, document):
+        texts = list()
+        processed_document = tf.compat.as_str(process_text(document, True, 2))
+        texts.append(processed_document)
+        sparse_tfidf_texts = self.data.tfidf.transform(texts)
+
+        return self.session.run(tf.argmax(self.y_conv,1), feed_dict={self.x: sparse_tfidf_texts[0].todense(), self.keep_prob: 1.0})

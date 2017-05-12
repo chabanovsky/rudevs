@@ -1,5 +1,6 @@
 import datetime
 import collections
+import numpy as np
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, ColumnDefault
 from sqlalchemy import and_, or_, desc
@@ -285,19 +286,37 @@ class VocabularyQueston(db.Model):
         
     @staticmethod
     def full_vocabualary():
+        return VocabularyQueston.get_vocabualary()  
+
+    @staticmethod
+    def positive_vocabualary():
+        return VocabularyQueston.get_vocabualary(True)  
+
+    @staticmethod
+    def get_vocabualary(only_positive=False):
         session = db_session()
         query = session.query(
                     func.string_agg(VocabularyQueston.filtered_words, 
                             aggregate_order_by(literal_column("' '"), 
-                            VocabularyQueston.id))).\
-                    filter(VocabularyQueston.is_negative==False).first()
+                            VocabularyQueston.id)))
+        if only_positive:
+            query = query.filter(VocabularyQueston.is_negative==False)
+        
+        query = query.first()
         session.close()
 
-        return u"%s" % str(query)
+        return u"%s" % str(query)  
+
+    @staticmethod
+    def test_data(length):
+        session = db_session()
+        items = session.query(VocabularyQueston).filter(VocabularyQueston.is_negative==False).order_by(func.random()).limit(length).all()
+        session.close()
+        return items                     
 
 class VocabualaryQuestonWrapper():
-    def __init__(self):
-        vocabualary = VocabularyQueston.full_vocabualary()
+    def __init__(self, only_positive=False):
+        vocabualary = VocabularyQueston.positive_vocabualary() if only_positive else VocabularyQueston.full_vocabualary() 
         splited_vocabualary = str(vocabualary).split()
         indexies, most_common, dictionary, reversed_dictionary, vocabualary_size = self.build_dataset(splited_vocabualary)
 
