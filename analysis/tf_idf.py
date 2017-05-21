@@ -23,11 +23,10 @@ class TfIdfData():
             self.max_features = self.helper.vocabualary_size
         else:
             n = (self.helper.vocabualary_size // vocabualary_size)
-            n = int(math.sqrt(n))
             n = (n if n % 2 == 0 else n + 1)
             while n % 4 != 0:
                 n = n + 2
-            self.max_features = n * n
+            self.max_features = n 
 
         self.texts      = list()
         self.labels     = np.empty(shape=(0, self.num_classes))
@@ -191,8 +190,9 @@ class TfIdfConvModel(TFIDFModelBase):
     def max_pool_2x2(x, name):
         # ksize: A list of ints that has length >= 4. The size of the window for each dimension of the input tensor.
         # strides: A list of ints that has length >= 4. The stride of the sliding window for each dimension of the input tensor.
-        return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
-                            strides=[1, 2, 2, 1], padding='SAME', name=name)        
+        # It was [1, 2, 2, 1]
+        return tf.nn.max_pool(x, ksize=[1, 1, 2, 1],
+                            strides=[1, 1, 1, 1], padding='SAME', name=name)        
 
     def declare_tf(self):
         self.graph = tf.Graph()
@@ -203,11 +203,10 @@ class TfIdfConvModel(TFIDFModelBase):
             num_features_to_consider = 32
             window_size = 5
             # We want to
-            rehape_size = int(math.sqrt(num_features))
+            rehape_size = num_features
             # We have two layers. At each layer we cut the size twice 2*2 = 4.
-            final_rehape_size = rehape_size // 4
-            w_fc1_size = final_rehape_size * final_rehape_size * num_features_to_consider * 2
-
+            final_rehape_size = rehape_size 
+            w_fc1_size = final_rehape_size * num_features_to_consider * 2
 
             print ("num_features: ", num_features)
             print ("rehape_size: ", rehape_size)
@@ -220,10 +219,10 @@ class TfIdfConvModel(TFIDFModelBase):
             ###########################
             # First convolusional layer
             ###########################
-            self.W_conv1 = self.weight_variable([window_size, window_size, 1, num_features_to_consider], "W_conv1")
+            self.W_conv1 = self.weight_variable([1, window_size, 1, num_features_to_consider], "W_conv1")
             self.b_conv1 = self.bias_variable([num_features_to_consider], "b_conv1")
             
-            self.x_image = tf.reshape(self.x, [-1, rehape_size, rehape_size, 1], name="x_image")
+            self.x_image = tf.reshape(self.x, [-1, 1, rehape_size, 1], name="x_image")
 
             self.h_conv1 = tf.nn.relu(self.conv2d(self.x_image, self.W_conv1, name="conv2d") + self.b_conv1)
             self.h_pool1 = self.max_pool_2x2(self.h_conv1, "h_pool1")
@@ -231,7 +230,7 @@ class TfIdfConvModel(TFIDFModelBase):
             ###########################
             # Second layer
             ###########################
-            self.W_conv2 = self.weight_variable([window_size, window_size, num_features_to_consider, num_features_to_consider * 2], "W_conv2")
+            self.W_conv2 = self.weight_variable([1, window_size, num_features_to_consider, num_features_to_consider * 2], "W_conv2")
             self.b_conv2 = self.bias_variable([num_features_to_consider * 2], "b_conv2")
 
             self.h_conv2 = tf.nn.relu(self.conv2d(self.h_pool1, self.W_conv2, name="h_conv2") + self.b_conv2)
