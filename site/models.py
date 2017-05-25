@@ -47,6 +47,27 @@ class Statement(db.Model):
     def __repr__(self):
         return '<Stmnt %r>' % str(self.id)
 
+    @staticmethod
+    def get_negative():
+        session = db_session()
+        query = session.query(Statement.id.label('statement_id'), func.string_agg(TelegramTextMessage.message, 
+                aggregate_order_by(literal_column("'. '"), 
+                        TelegramTextMessage.created)).label('agg_message')).\
+            filter(Statement.reviewed==True).\
+            filter(Statement.is_question==Statement.false_assumption).\
+            filter(and_(TelegramTextMessage.channel_id==Statement.channel_id, TelegramTextMessage.user_id==Statement.user_id)).\
+            filter(TelegramTextMessage.message_id.between(Statement.first_msg_id, Statement.last_msg_id)).\
+            group_by(Statement.id).\
+            subquery()
+
+        query_results = session.query(query.c.statement_id, query.c.agg_message, func.length(query.c.agg_message).label('len'), TelegramChannel.tags.label('tags')).\
+            outerjoin(Statement, Statement.id==query.c.statement_id).\
+            outerjoin(TelegramChannel, TelegramChannel.channel_id==Statement.channel_id).distinct().all()
+
+        session.close()
+
+        return query_results
+
 class TelegramChannel(db.Model):
     __tablename__ = 'telegram_channel'
 
@@ -117,19 +138,6 @@ class TelegramUser(db.Model):
     def __repr__(self):
         return '<TUser %r>' % str(self.id)
 
-
-class SkippGramVocabulary(db.Model):
-    __tablename__ = 'skipp_gram_vocabulary'
-
-    id          = db.Column(db.Integer, primary_key=True)
-    vocabulary  = db.Column(db.String)
-
-    def __init__(self, vocabulary):
-        self.vocabulary = vocabulary
-
-    def __repr__(self):
-        return '<SGVoc %r>' % str(self.id)
-
 class DBStaticAssessment(db.Model):
     __tablename__ = 'static_assessment'
 
@@ -154,27 +162,18 @@ class DBStaticAssessment(db.Model):
     def __repr__(self):
         return '<DBSA %r>' % str(self.id)
 
+class SourceData(db.Model):
+    __tablename__ = 'source_data'
 
-class Word2VecModelDB(db.Model):
-    __tablename__ = 'word_2_vec_model'
-
-    id              = db.Column(db.Integer, primary_key=True)
-    vocabulary_id   = db.Column(db.Integer, ForeignKey('skipp_gram_vocabulary.id'), nullable=False)
-    dump_filename   = db.Column(String) 
-
-    def __init__(self, vocabulary_id, 
-            dump_filename):
-        self.vocabulary_id = vocabulary_id
-        self.dump_filename = dump_filename
-
-    def __repr__(self):
-        return '<W2VModel %r>' % str(self.id)
-
-class VocabularyQueston(db.Model):
-    __tablename__ = 'vocabulary_queston'
+    source_type_so_question     = 1
+    source_type_so_answer       = 2
+    source_type_so_comment      = 3
+    source_type_tl_statement    = 4
+    source_type_so_bq_question  = 5
 
     id          = db.Column(db.Integer, primary_key=True)
-    so_id       = db.Column(db.Integer)
+    source_id   = db.Column(db.Integer)
+    source_type = db.Column(db.Integer)
     body        = db.Column(String) 
     title       = db.Column(String) 
     tags        = db.Column(String) 
@@ -187,7 +186,8 @@ class VocabularyQueston(db.Model):
     question_words = db.Column(db.String)
     is_negative = db.Column(db.Boolean, default=True)
 
-    def __init__(self, so_id, 
+    def __init__(self, source_id,
+            source_type, 
             body, 
             title, 
             tags, 
@@ -198,7 +198,8 @@ class VocabularyQueston(db.Model):
             filtered_words, 
             code_words,
             is_negative):
-        self.so_id      = so_id
+        self.source_id  = source_id
+        self.source_type= source_type
         self.body       = body
         self.title      = title
         self.tags       = tags
@@ -214,7 +215,15 @@ class VocabularyQueston(db.Model):
         return '<VQues %r>' % str(self.id)
 
     @staticmethod
-    def update_or_create(session, so_id, 
+    def update_or_create_raw():
+        """
+        TODO: Implement this method.
+        """
+        pass
+
+    @staticmethod
+    def update_or_create(session, source_id, 
+            source_type, 
             body, 
             title, 
             tags, 
@@ -229,9 +238,9 @@ class VocabularyQueston(db.Model):
         if session is None:
             local_session = db_session()
         
-        voc_qstn = VocabularyQueston.query.filter_by(so_id=so_id).first()
+        voc_qstn = SourceData.query.filter(and_(SourceData.source_id==source_id, SourceData.source_type==source_type)).first()
         if voc_qstn is not None:
-            update_query = VocabularyQueston.__table__.update().values(
+            update_query = SourceData.__table__.update().values(
                     body=body, 
                     title=title,
                     tags=tags,
@@ -240,7 +249,7 @@ class VocabularyQueston(db.Model):
                     word_count=word_count,
                     code_words=code_words,
                     question_words=question_words).\
-                where(VocabularyQueston.so_id==so_id)
+                where(SourceData.source_id==source_id)
             if session is None:
                 local_session.execute(update_query)
                 local_session.commit()
@@ -250,8 +259,9 @@ class VocabularyQueston(db.Model):
 
             return
 
-        voc_qstn = VocabularyQueston(
-            so_id, 
+        voc_qstn = SourceData(
+            source_id, 
+            source_type,
             body, 
             title, 
             tags, 
@@ -273,34 +283,34 @@ class VocabularyQueston(db.Model):
     @staticmethod
     def count():
         session = db_session()
-        count = session.query(func.count(VocabularyQueston.id)).scalar()
+        count = session.query(func.count(SourceData.id)).scalar()
         session.close()
         return count
 
     @staticmethod
     def all():
         session = db_session()
-        items = session.query(VocabularyQueston).distinct().all()
+        items = session.query(SourceData).distinct().all()
         session.close()
         return items
         
     @staticmethod
     def full_vocabualary():
-        return VocabularyQueston.get_vocabualary()  
+        return SourceData.get_vocabualary()  
 
     @staticmethod
     def positive_vocabualary():
-        return VocabularyQueston.get_vocabualary(True)  
+        return SourceData.get_vocabualary(True)  
 
     @staticmethod
     def get_vocabualary(only_positive=False):
         session = db_session()
         query = session.query(
-                    func.string_agg(VocabularyQueston.filtered_words, 
+                    func.string_agg(SourceData.filtered_words, 
                             aggregate_order_by(literal_column("' '"), 
-                            VocabularyQueston.id)))
+                            SourceData.id)))
         if only_positive:
-            query = query.filter(VocabularyQueston.is_negative==False)
+            query = query.filter(SourceData.is_negative==False)
         
         query = query.first()
         session.close()
@@ -308,15 +318,23 @@ class VocabularyQueston(db.Model):
         return u"%s" % str(query)  
 
     @staticmethod
-    def test_data(length):
+    def test_data(length, is_negative=False):
         session = db_session()
-        items = session.query(VocabularyQueston).filter(VocabularyQueston.is_negative==False).order_by(func.random()).limit(length).all()
+        if not is_negative:
+            items = session.query(SourceData).filter(SourceData.is_negative==False).order_by(func.random()).limit(length).all()
+        else:
+            items = session.query(SourceData).filter(SourceData.source_type==SourceData.source_type_tl_statement).\
+                join(Statement, SourceData.source_id==Statement.id).\
+                filter(and_(Statement.reviewed==True, Statement.false_assumption==True)).\
+                distinct().\
+                all()
+
         session.close()
         return items                     
 
-class VocabualaryQuestonWrapper():
+class SourceDataWrapper():
     def __init__(self, only_positive=False):
-        vocabualary = VocabularyQueston.positive_vocabualary() if only_positive else VocabularyQueston.full_vocabualary() 
+        vocabualary = SourceData.positive_vocabualary() if only_positive else SourceData.full_vocabualary() 
         splited_vocabualary = str(vocabualary).split()
         indexies, most_common, dictionary, reversed_dictionary, vocabualary_size = self.build_dataset(splited_vocabualary)
 
@@ -353,51 +371,6 @@ class VocabualaryQuestonWrapper():
         reversed_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
 
         return indexies, count, dictionary, reversed_dictionary, vocabualary_size    
-
-class NegativeExample(db.Model):
-    __tablename__ = 'negative_example'
-
-    id          = db.Column(db.Integer, primary_key=True)
-    statement_id= db.Column(db.Integer, ForeignKey('statement.id'), nullable=True)
-    body        = db.Column(String) 
-    tags        = db.Column(String) 
-    length      = db.Column(db.Integer)
-    word_count  = db.Column(db.Integer)
-    code_words  = db.Column(String) 
-    
-    filtered_words = db.Column(db.String) 
-    question_words = db.Column(db.String)
-
-    def __init__(self, body,  
-            tags, 
-            length, 
-            word_count, 
-            question_words,
-            filtered_words, 
-            code_words, statement_id=None):
-        self.body       = body
-        self.tags       = tags
-        self.length     = length
-        self.word_count = word_count
-        self.code_words = code_words
-        self.question_words = question_words
-        self.filtered_words = filtered_words
-        if statement_id is not None:
-            self.statement_id = statement_id
-
-    def __repr__(self):
-        return '<NegExemple %r>' % str(self.id)
-
-    @staticmethod
-    def test_data():
-        session = db_session()
-        query = session.query(NegativeExample).join(Statement, NegativeExample.statement_id==Statement.id).\
-                filter(and_(Statement.reviewed==True, Statement.false_assumption==True)).\
-                distinct().\
-                all()
-        session.close()
-        return query        
-
 
 class TFModel(db.Model):
     __tablename__ = 'tf_model'

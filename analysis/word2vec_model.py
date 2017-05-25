@@ -28,12 +28,12 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
 from sortedcontainers import SortedList
-from models import SkippGramVocabulary, Word2VecModelDB
 from analysis.langs import Langs
 from analysis.question_words import QuestionWords
 from analysis.utils import filter_noise, process_text
 from meta import db_session
 from sqlalchemy import desc
+from models import TFModel
 
 class Word2VecModel():
     filename = "questions.csv"
@@ -144,38 +144,42 @@ class Word2VecModel():
         plt.savefig(filename)
 
     def update_train_data(self):
-        vocabulary= self.read_question_data()
-        db_vocabulary_item = SkippGramVocabulary(vocabulary)
-        session = db_session()
-        session.add(db_vocabulary_item)
-        session.commit()
-        session.close()
+        # TODO: Here we should use SourceDataWarapper.
+        #vocabulary= self.read_question_data()
+        #db_vocabulary_item = SkippGramVocabulary(vocabulary)
+        #session = db_session()
+        #session.add(db_vocabulary_item)
+        #session.commit()
+        #session.close()
+        pass
 
     def upload_dataset(self, id=None):
-        session = db_session()
-        query = session.query(SkippGramVocabulary.id, SkippGramVocabulary.vocabulary)
-        if id is None:
-            query = query.order_by(desc(SkippGramVocabulary.id))
-        else:
-            query = query.filter(SkippGramVocabulary.id==id)
-        db_item = query.first()
+        # TODO: Here we should use SourceDataWarapper.
+        #session = db_session()
+        #query = session.query(SkippGramVocabulary.id, SkippGramVocabulary.vocabulary)
+        #if id is None:
+        #    query = query.order_by(desc(SkippGramVocabulary.id))
+        #else:
+        #    query = query.filter(SkippGramVocabulary.id==id)
+        #db_item = query.first()
 
-        vocabulary = str(db_item.vocabulary)        
-        vocabulary_id = int(db_item.id)
+        #vocabulary = str(db_item.vocabulary)        
+        #vocabulary_id = int(db_item.id)
 
-        session.close()
+        #session.close()
         # Build the dictionary and replace rare words with UNK token.
         # data: a set of indexes of words in the "dictionary"
         # count: a dictionary where key is a word, value is the word frequency
         # dictionary: a dictionary where key is a word, value is an index of in an array of the words sorted by frequency
         # reverse_dictionary: a reversed version of the "dictionary"
 
-        self.data, self.count, self.dictionary, self.reverse_dictionary = self.build_dataset(
-                tf.compat.as_str(vocabulary).split(), 
-                self.vocabulary_size)
-        del vocabulary  
+        #self.data, self.count, self.dictionary, self.reverse_dictionary = self.build_dataset(
+        #        tf.compat.as_str(vocabulary).split(), 
+        #        self.vocabulary_size)
+        #del vocabulary  
 
-        return vocabulary_id
+        #return vocabulary_id
+        return -1
 
     def visualise(self, final_embeddings, reverse_dictionary, filename="./dump/tsne.png"):
         tsne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=5000)
@@ -189,13 +193,13 @@ class Word2VecModel():
 
     def restore_last(self):
         session = db_session()
-        query = session.query(Word2VecModelDB.vocabulary_id, Word2VecModelDB.dump_filename).order_by(desc(Word2VecModelDB.id))
+        query = TFModel.get_last("word2vec")
         db_item = query.first()
         dump_filename = str(db_item.dump_filename)
-        vocabulary_id = int(db_item.vocabulary_id)
         session.close()
 
-        self.upload_dataset(vocabulary_id)
+        # TODO: Correct it to SourceDataWrapper. Though it would be better to use the standart Word2Vec algoritm instead.
+        # self.upload_dataset(vocabulary_id)
         return dump_filename
     
     def word_index(self, word):
@@ -361,7 +365,7 @@ class Word2VecModel():
             
             save_path = self.saver.save(session, self.dump_filename)
             pg_session = db_session()
-            w2vmdl = Word2VecModelDB(vocabulary_id, save_path)
+            w2vmdl = TFModel("word2vec", save_path)
             pg_session.add(w2vmdl)
             pg_session.commit()
             pg_session.close()

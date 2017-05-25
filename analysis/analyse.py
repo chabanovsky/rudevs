@@ -25,7 +25,7 @@ from sqlalchemy import desc, and_, or_, asc
 from sqlalchemy.sql import func, literal_column, update
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 
-from models import SkippGramVocabulary, VocabularyQueston, Statement, TelegramTextMessage, NegativeExample, TelegramChannel
+from models import SourceData, Statement, TelegramTextMessage, TelegramChannel
 from meta import db_session, MINIMIM_QUESTION_LENGHT
 from analysis.word2vec_model import Word2VecModel
 from analysis.rules import RuleAnalyser
@@ -43,8 +43,6 @@ class QuestionAnalyser():
     context_word_threshold = 2
 
     def __init__(self):
-        self.model = Word2VecModel()    
-        self.model.prepare_most_common_words()
         self.static_assessment = StaticAssessment()
         self.static_assessment.load()
 
@@ -75,24 +73,6 @@ class QuestionAnalyser():
             print ("[not valid: no question words]")            
             return False
 
-        keywords = list()
-        keywords_count = 0
-
-        for index, filtered_word in enumerate(filtered_vocabualary):
-            nearest = self.model.most_common_words.get(filtered_word, None)
-            if nearest is not None:
-                keywords_count += 1
-                min_index = max(0, index-self.model.skip_window)
-                max_index = min(filtered_vocabualary_size-1, index+self.model.skip_window)
-                sub_array = filtered_vocabualary[min_index:max_index]
-                inter_sub_array = set(sub_array).intersection(nearest)
-                keywords.extend(inter_sub_array)
-        
-        if (keywords_count >= filtered_vocabualary_size // 3) and (len(keywords) >= keywords_count//self.context_word_threshold):
-            print (question_str.strip(), " [valid: most frequent words (kc: ", keywords_count, ", len: ", len(keywords) ,"/", filtered_vocabualary_size // 3 , ")] total common: ", len(self.model.most_common_words))            
-            return True
-
-        print ("[Not valid/Not defined] keywords_count: ", keywords_count, ", filtered_vocabualary_size // 3: ", filtered_vocabualary_size // 3, ", len(keywords): ", len(keywords))
         return False
 
     def has_question_words(self, vocabualary):
@@ -123,7 +103,7 @@ def load_questions(check_existence=True):
     with open("questions.csv", 'rt', encoding="utf8") as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
-            so_id, score, answer_count, title, body, tags = row
+            source_id, score, answer_count, title, body, tags = row
             length = len(body)
             processed_body = tf.compat.as_str(process_text(body, True, 2))
             code_words = tf.compat.as_str(process_code(body))
@@ -134,8 +114,9 @@ def load_questions(check_existence=True):
             for word in filtered_vocabualary:
                 if question_words_checker.is_question_word(word):
                     question_words += " " + word
-            VocabularyQueston.update_or_create(session,
-                so_id, 
+            SourceData.update_or_create(session,
+                source_id, 
+                SourceData.source_type_so_question,
                 body, 
                 title, 
                 tags, 
@@ -171,26 +152,9 @@ def do_auto_review():
 
 def genereate_negative_examples(check_existence=True):
     question_words_checker = QuestionWords()
-    session = db_session()
+    items = Statement.get_negative()
 
-    query = session.query(Statement.id.label('statement_id'), func.string_agg(TelegramTextMessage.message, 
-                aggregate_order_by(literal_column("'. '"), 
-                        TelegramTextMessage.created)).label('agg_message')).\
-            filter(Statement.reviewed==True).\
-            filter(Statement.is_question==Statement.false_assumption).\
-            filter(and_(TelegramTextMessage.channel_id==Statement.channel_id, TelegramTextMessage.user_id==Statement.user_id)).\
-            filter(TelegramTextMessage.message_id.between(Statement.first_msg_id, Statement.last_msg_id)).\
-            group_by(Statement.id).\
-            subquery()
-
-    query = session.query(query.c.statement_id, query.c.agg_message, func.length(query.c.agg_message).label('len'), TelegramChannel.tags.label('tags')).\
-            outerjoin(Statement, Statement.id==query.c.statement_id).\
-            outerjoin(TelegramChannel, TelegramChannel.channel_id==Statement.channel_id).distinct()
-
-    session.close()
-    session = db_session()
-
-    for item in query.all(): 
+    for item in items: 
         filtered_words = tf.compat.as_str(process_text(item.agg_message, True, 2))   
         filtered_vocabualary = filtered_words.split()   
         word_count = len(filtered_vocabualary)
@@ -201,33 +165,19 @@ def genereate_negative_examples(check_existence=True):
             if question_words_checker.is_question_word(word):
                 question_words += " " + word
 
-        if check_existence:
-            voc_qstn = NegativeExample.query.filter_by(statement_id=item.statement_id).first()
-            if voc_qstn is not None:
-                update_query = NegativeExample.__table__.update().values(
-                        body=item.agg_message, 
-                        tags=item.tags,
-                        length=item.len,
-                        word_count=word_count,
-                        code_words=code_words,
-                        filtered_words=filtered_words,
-                        question_words=question_words).\
-                    where(NegativeExample.statement_id==item.statement_id)
-                session.execute(update_query)
-                continue
-
-        neg = NegativeExample(item.agg_message, 
-                item.tags, 
-                item.len,
-                word_count,
-                question_words,
-                filtered_words, 
-                code_words, 
-                item.statement_id)
-        session.add(neg)
-
-    session.commit()
-    session.close()
+        SourceData.update_or_create(None, 
+            item.statement_id,
+            SourceData.source_type_tl_statement,
+            item.agg_message, 
+            "",
+            item.tags,
+            0,
+            item.len,
+            word_count,
+            question_words,
+            filtered_words,
+            code_words,
+            True)
 
 def do_print_most_common_words():
     model = Word2VecModel()

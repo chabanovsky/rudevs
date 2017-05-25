@@ -4,12 +4,11 @@ from bs4 import BeautifulSoup
 import time
 import re
 
-from models import VocabularyQueston
+from models import SourceData
 from analysis.utils import process_text, process_code
 from analysis.question_words import QuestionWords
 
 class BigQuestion():
-    id_shift = 101
     # each page has 20 questions
     number_of_page_to_upload = 2000 
     domain = "http://www.bolshoyvopros.ru"
@@ -40,7 +39,7 @@ class BigQuestion():
     def process_question(self, question_url):
         response = requests.get(question_url)
         soup = BeautifulSoup(response.text)
-        question_id = int(str(BigQuestion.id_shift) + re.search('(\d+)', question_url).group(0))
+        question_id = int(re.search('(\d+)', question_url).group(0))
         h1 = soup.find('h1')
         if h1 is None:
             return
@@ -77,8 +76,9 @@ class BigQuestion():
             if self.question_words_checker.is_question_word(word):
                 question_words += " " + word
 
-        VocabularyQueston.update_or_create(None,
+        SourceData.update_or_create(None,
                 question_id,
+                SourceData.source_type_so_bq_question,
                 question, 
                 title, 
                 tags, 

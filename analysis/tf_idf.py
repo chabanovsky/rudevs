@@ -12,12 +12,12 @@ import string
 import tensorflow as tf
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from models import VocabularyQueston, VocabualaryQuestonWrapper, NegativeExample, TFModel
+from models import SourceData, SourceDataWrapper, TFModel
 from analysis.utils import process_text
 
 class TfIdfData():
     def __init__(self, vocabualary_size=None):
-        self.helper         = VocabualaryQuestonWrapper()
+        self.helper         = SourceDataWrapper()
         self.num_classes    = 2
         if vocabualary_size is None:
             self.max_features = self.helper.vocabualary_size
@@ -30,7 +30,7 @@ class TfIdfData():
 
         self.texts      = list()
         self.labels     = np.empty(shape=(0, self.num_classes))
-        self.documents  = VocabularyQueston.all()
+        self.documents  = SourceData.all()
 
         print("Number of documetnts to train: ", len(self.documents))
 
@@ -84,7 +84,7 @@ class TFIDFModelBase():
         self.saver.restore(self.session, saving_filename)  
 
     def validate_model(self):
-        documents   = NegativeExample.test_data()
+        documents   = SourceData.test_data(50, True)
         texts       = list()
         labels      = np.empty(shape=(0, self.data.num_classes))
 
@@ -297,14 +297,14 @@ class TfIdfConvModel(TFIDFModelBase):
                                     self.y_: label_batch, self.keep_prob: 1.0}))
 
     def validate_get_class(self):
-        documents = NegativeExample.test_data()
+        documents = SourceData.test_data(10, True)
         print ("---------------Test negative----------------")
         for document in documents:
             result = self.get_class(document.body)
             print("IsPositive: ", result, ", document: ", document.body[:50])
 
         print ("---------------Test positive----------------")
-        documents = VocabularyQueston.test_data(50)
+        documents = SourceData.test_data(50)
         for document in documents:
             result = self.get_class(document.body)
             print("IsPositive: ", result, ", document: ", document.body[:50])
