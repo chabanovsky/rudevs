@@ -1,0 +1,2120 @@
+Id,Title,Score,Body,Tags
+"87096","","-18","<p>да лучше начни создавать сайт на joomla и всё будет ок! учи joomla! </p>",""
+"587433","","-13","<p>Вы должны себе отдавать отчет, что в программировании находится разная публика, чаще всего которая не блистает интеллектом и не умеет программировать. Но, к сожалению, в программировании, как и в жизни, решающим является не талант, а наличии денег.</p>
+
+<p>Java изобрели очень слабые программисты, которые не умели писать код, когда создавали свой язык. Недаром Java считается реинкарнацией Basic.</p>
+
+<p>Java существует лишь по одной причине: туда гиганты софтверной индустрии вбухали большие деньги. А сделали они это также по одной причине, чтобы запустить с шумихой новую ""технологию"", и тем самым отбить пользователей у своих конкурентов. А когда пользователи разберутся, с какой поделкой они имеют дело, будет уже поздно, так как они в свою очередь уже затратили много денег в том числе и на обучение кадров.</p>
+
+<p>Что касается вашего конкретного примера, то лучше всего использовать логическую переменную во внешнем цикле, а в теле цикла или внутри switch устанавливать значение этой переменной.</p>
+
+<p>Что касается Java, то она предоставляет корявую конструкцию с <code>break</code> или <code>continue</code> предложением с меткой, которые просто являются замаскированным <code>goto</code> предложением, только еще более запутанные, чем <code>goto</code> предложение, так как они передают управление не на предложение после помеченного управляющего или иного предложения, а на начало этого управляющего предложения, что <strong>без всяких сомнений</strong>  только запутывает читающего код программиста.</p>
+
+<p>Рассмотрите данный пример кода из оригинальной документации по Java (раздел документации 14.15 The break Statemen)</p>
+
+<pre><code>class Graph {
+     int edges[][];
+     public Graph(int[][] edges) { this.edges = edges; } 
+
+    public Graph loseEdges(int i, int j) { 
+        int n = edges.length;
+        int[][] newedges = new int[n][];
+        for (int k = 0; k &lt; n; ++k) {
+ edgelist: {
+             int z;
+ search: {
+             if (k == i) {
+                 for (z = 0; z &lt; edges[k].length; ++z) {
+                     if (edges[k][z] == j) break search;
+                 }
+             } else if (k == j) {
+                 for (z = 0; z &lt; edges[k].length; ++z) {
+                     if (edges[k][z] == i) break search;
+                 }
+             } 
+
+            // No edge to be deleted; share this list.
+             newedges[k] = edges[k];
+             break edgelist; }
+ //search 
+
+            // Copy the list, omitting the edge at position z.
+             int m = edges[k].length - 1;
+             int ne[] = new int[m];
+             System.arraycopy(edges[k], 0, ne, 0, z);
+             System.arraycopy(edges[k], z+1, ne, z, m-z);
+             newedges[k] = ne; }
+ //edgelist
+         }
+         return new Graph(newedges);
+     }
+ }
+</code></pre>
+
+<p>Это просто что-то страшное! Это ""спагетти"" невозможно читать и невозможно понять. Сразу же можно сделать вывод о квалификации разработчиков Java.:)</p>
+
+<p>Недаром Microsoft создала свой язык C#, который по качеству и по стилю резко отличается от Java. C# создавали высококвалифицированные программисты, а Java создавали неучи с завышенным самомнением, которые расплодили точно таких же неучей, которые не умеют писать код.</p>
+
+<p>Итак, надеюсь, вы уже поняли, что в Java есть исковерканное  <strong>goto</strong> предложение, замаскированное под <code>break</code> и <code>continue</code>, которые передают управление, фактически, неизвестно куда, так как интуитивно вы предполагаете, что если надо выйти из управляющего блока, то управление должно быть передано в предложение, которые следует за управляющим блоком, а на самом деле вы видите, что управление передается в начало управляющего блока.</p>
+
+<p>Вот фрагмент код из вышеприведенного примера из документации по Java</p>
+
+<pre><code> edgelist: {
+             int z; search: {
+             if (k == i) {
+                 for (z = 0; z &lt; edges[k].length; ++z) {
+                     if (edges[k][z] == j) break search;
+                 }
+             } else if (k == j) {
+                 for (z = 0; z &lt; edges[k].length; ++z) {
+                     if (edges[k][z] == i) break search;
+                 }
+             } 
+
+            // No edge to be deleted; share this list.
+             newedges[k] = edges[k];
+             break edgelist; }
+ //search 
+</code></pre>
+
+<p>И куда передает управление предложение?</p>
+
+<pre><code>             break edgelist; }
+</code></pre>
+
+<p>Покажите этот код человеку, который ранее не имел дело с Java, и увидите, что он будет в замешательстве.:)</p>
+
+<p>Вы также можете написать, например</p>
+
+<pre><code>Rxit: while ( true )
+{
+    switch( expression )
+    {
+        //...
+        default: break Exit;
+    }
+}
+</code></pre>
+
+<p>Только не думайте, что цикл <code>while</code> сновав начнет выполняться по второму разу. На самом деле логически это выглядит как будто бы метка стоит после цикла</p>
+
+<pre><code>while ( true )
+{
+    switch( expression )
+    {
+        //...
+        default: break Exit;
+    }
+}
+Exit:
+//...
+</code></pre>
+",""
+"595802","","-13","<p><a href=""http://website-create.ru/web-yroki/sozdanie-saitov-yroki/29-vstavka-dannih-mysql.html"" rel=""nofollow noreferrer"">http://website-create.ru/web-yroki/sozdanie-saitov-yroki/29-vstavka-dannih-mysql.html</a></p>
+
+<p><a href=""http://webiprog.com"" rel=""nofollow noreferrer"">Webiprog :: Bespoke web development company for websites</a></p>
+",""
+"595804","","-13","<p><a href=""http://www.fandroid.info/podderzhka-razlichnyh-yazykov/"" rel=""nofollow noreferrer"">http://www.fandroid.info/podderzhka-razlichnyh-yazykov/</a></p>
+
+<p><a href=""http://webiprog.com"" rel=""nofollow noreferrer"">Webiprog :: Bespoke web development company for websites</a></p>
+",""
+"657848","","-11","<p><strong>Я не совсем согласен с тем, как обьяснили другие ответчики.</strong></p>
+
+<p>Для начала: </p>
+
+<p><strong>инкремент</strong> = увеличить (обычно на 1) </p>
+
+<p><strong>Пре-</strong> = изменить переменную ПЕРЕД использованием</p>
+
+<p><strong>Пост-</strong> = увеличить переменную ПОСЛЕ использования</p>
+
+<p>Код </p>
+
+<pre><code>int a = 10;
+a += a++;
+</code></pre>
+
+<p>по логике должен быть 21.</p>
+
+<p>Вполне логично что должна быть последовательность действий</p>
+
+<ol>
+<li><code>а</code> присвоить 10 (инициализация)</li>
+<li>используем <code>а</code> (считываем значение 10) и инкрементируем в 11</li>
+<li>11(до знака присвоения) + 10(после знака присвоения) = 21</li>
+</ol>
+
+<p>Скорее всего на других языках значение будет колебатся между 20 и 21 в зависимости от конкретного языка на котором будешь тестировать(считай, в зависимости от компилятора)</p>
+
+<p>Почему я так думаю? Есть очень интересный пример</p>
+
+<pre><code>int i = 5;
+i = ++i + ++i;
+</code></pre>
+
+<p>ожидаемое число -- 14.
+Потому, что <strong>правильная</strong> последовательность действий будет</p>
+
+<ol>
+<li>i = 5 (инициализация)</li>
+<li>i = 6</li>
+<li>i = 7(это ведь преинкремент! Все преинкременты должны исполнятся до знака присвоения!)</li>
+<li>i = 7+7 </li>
+</ol>
+
+<p>но на практике, разные компиляторы разных языков будут выдавать разные значения в рамках от 10 до 14 в зависимости от компилятора. Результат компилирования в: </p>
+
+<ul>
+<li>C#: 13</li>
+<li>Java: 13</li>
+<li>C и С++ : 13 и 14 в зависимости от компилятора</li>
+<li>Perl: 14</li>
+<li>Pawn: 13</li>
+<li>PHP: 13</li>
+<li>JS: 13</li>
+<li>VB: 10</li>
+<li>Другие языки легко нагуглить.</li>
+</ul>
+
+<p><strong>Потому мой ответ: Это специфика работы компилятора/специфика языка по его спецификации(если там указано)</strong> </p>
+
+<p>[ в случае С# указано ]</p>
+",""
+"473735","","-11","<p>Я бы советовал начинающим пользоваться <a href=""https://eurobyte.ru/"" rel=""nofollow"">https://eurobyte.ru/</a> т.к. они дают месяц бесплатный, и есть возможность ознакомиться с работой и попробовать свои силы так сказать. Плюс поддержка у них на высоте.</p>
+",""
+"473734","","-11","<p>timeweb - хороший хостинг и очень выгодный по цене</p>
+",""
+"530111","","-11","<p>Лично я к примеру, пошел в java из за ЗП, кроссплатформености,схожести на С подобные ЯП, и конечно возможность не особо напрягаясь писать андроид приложения и прочее.</p>
+",""
+"542725","","-10","<pre><code>var str = ""400"";
+
+var result = str.match( /^[^0]+/i );
+
+alert( result[0] ); // 4
+</code></pre>
+",""
+"1862","","-10","<p>Еще иногда используется для получения несколько более быстрого кода (теория, на практике не проверял). В таких случаях генерится другой программой. Судя по всему, если прирост производительности и есть, близок к нулю.</p>",""
+"632","","-10","<p>Есть конечно!<br>
+</p>
+<pre><code>var thingsv = [length, value];
+</code></pre>",""
+"168079","","-10","<p>А откуда в С/С++ какой-то тип bool, если их нет? bool в С++ - это кастыль для галочки и булом вообще не является, а сделан для не осилятор С-стайл записи. </p>
+<p>В си есть ноль, либо !(не)ноль. Никаких 1 и 0 там нет, ибо вместо !0 может быть хоть 100500. Когда люди начитаются всякой муры про мистический тип bool, которого не существует, а потом пытаются понять Си - получается вот такая вот байда.</p>
+<p>Результат ! очень прост - это НЕ ноль, если она применяется к нулю и НОЛЬ если применяется НЕ к нулю. А то с вашими горе объяснениями получается, что !100500 - это !bool, хотя 100500 - это не bool. Это путает людей и они пытаются это криво понимать, а потом рождаются неосиляторы, которые ноют ""ааа, в С++ нет полноценного bool - бида"".</p>",""
+"22129","","-10","<ul>
+<li>3 В Windows нет системы прав доступа к файлам и папкам.</li>
+<li>4 В Windows нет возможности поставить квоты.</li>
+<li>5 В Linux файловая система лучше и быстрее, подсчет/расчет быстрее.</li>
+<li>6 В Linux много bash команд, которые существенно помогают в разработке АСУ.</li>
+</ul>",""
+"639788","","-10","<p>jjfdkljfdhhfdhshhjkdfhsgdshjkjkjkjkjkghgggggggggggffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ffffffffffffffffffffffffff  fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd</p>
+",""
+"649421","","-10","<p>Проснитесь, на дворе не 1970 год, игра Змейка - это хотя бы вот:</p>
+
+<p><a href=""https://i.stack.imgur.com/PL1sy.jpg"" rel=""nofollow noreferrer""><img src=""https://i.stack.imgur.com/PL1sy.jpg"" alt=""введите сюда описание изображения""></a></p>
+
+<p>А у вас что за гадость?<br>
+А если на Java написать нормальную змейку, то ей для нормальной работы понадобится Intel i5 и в ОЗУ она будет занимать 1 ГБ, а написать ее на Swing без игрового ""движка"" и даже 3D ""движка"" понадобится несколько человеко-лет.</p>
+
+<p>А так, конечно есть.<br> <a href=""https://www.google.ru/search?newwindow=1&amp;site=&amp;source=hp&amp;q=swing+onkeydown"" rel=""nofollow noreferrer"">https://www.google.ru/search?newwindow=1&amp;site=&amp;source=hp&amp;q=swing+onkeydown</a> <br>
+Структурно, такое реализуется через паттерн Listener или @Override'ом методов при субклассинге, подробности по ссылке выше.</p>
+",""
+"634108","","-9","<p>сука, хотел зарегаться в проге, зарегался на сайте. говно.</p>
+",""
+"618229","","-9","<p>Ну, плагин Jquery подключается! А в чем сообственно дело то? Код вроде не вредоносный. Если не знаешь откуда беруться эти коды, то знай, что html-код формируется динамически. То есть ты вставил например на свой сайт скрипт javascript например откуда нибудь с другого сайта. В этом javascript такой строчки нет. Но после того, как ты вставил его и посмотрел код, который тебе сформировал браузер - вдруг увидел незнакомый код. Он сформировался из тех посторонних скриптов, которые ты поставил на свой сайт. Например, поставил кнопку поделиться! Браузер видит одно, но ты видишь совмем другое. </p>
+",""
+"425152","","-9","<p>Смысл ооп в том, чтобы свести Вашу работу к удовольствию, а не перебору овса от пшеницы. Поверьте на слово, обойтись без ооп просто невозможно. Этого можно не заметить при создании отдельных классов или строчек кода, но собрать большое-поддерживаемое приложение невозможно.</p>
+
+<p>Представьте что у Вас насморк, а Вас посылают сначала к хирургу, потом к гинекологу, потом к парикмахеру.. Уже возникает вопрос -зачем? А вот если не сделает по ооп, то чтобы найти ошибку, придется облазить весь код.</p>
+",""
+"90131","","-9","<p>Что там сложного то, в HTML 5 ? Теги теже, только пополнение новых пришло, атрибуты - тоже самое... Учите CSS и HTML комплексно, ибо это самый удобный способ повалить сразу 2-х заек=) Потом переходите на PHP и сразу на 5-ю версию. Потом javascript, я его честно говоря даже не собираюсь учить, в сети готовых скриптов хватает на любой случай жизни=) Удачи! </p>",""
+"233343","","-9","<pre><code> paskal
+</code></pre>
+<p>улыбнуло. Но за него не беритесь. </p>
+<p>А теперь по серьёзному.</p>
+<p>1 . <strong>что не учить</strong></p>
+<p>Pascal. Почему? Он умирает. </p>
+<p>И php. Почему? Сам язвк туп, и плохо влияет на мозг. <a href=""http://habrahabr.ru/post/142140/"">Читать</a></p>
+<p>2 . <strong>что учить</strong></p>
+<p>Лично я начинал с javascript. Основы языка просты. Благодоря нему можно познакомиться с циклами, переменными и прочими основами программирования. Ну а дальше выбор ваш - можно java, python, c++ и т.д. и т.п. </p>
+<p>Если хочется экзотики - можно lua. Он вроде тоже прост. Можно попытаться осилить python с начала - но вроде тяжеловато</p>
+<p>p.s. привёт от 12 летнего меня, выучившего javascript в прошлые летние, </p>",""
+"444468","","-9","<p>Да ну загнул, парсер под каждый сайт... Лучше сбор базы данных оставить профессионалам. А то я тоже сидел копошился, собирал, друг увидел эти мучения и скинул ссылку на компанию www.baza-inform.ru Где за низкие цены можно оптом базы нужные купить, с уже рассортированными по категориям. Отклик от рассылки отличный, высокая валидность. Я лучше заплачу чисто символическую сумму, чем буду год сам базу собирать :/</p>
+",""
+"443078","","-9","<p>Чесно говоря, когда я только начинал <code>PHP</code>, у меня очень часто возникала такая проблема...</p>
+
+<p>Итак :</p>
+
+<p><strong>Подоплека и причина данной проблемы :</strong>
+<br>
+Самая распостраненная - это отсутствие каких-либо записей в вашей <code>базе данных</code>.
+<hr>
+<strong>Давайте разберемся в данном процессе и почему так происходит:</strong></p>
+
+<ol>
+<li>Вы подсойденяетесь к вашей базе данных (положим так: </li>
+</ol>
+
+<blockquote>
+  <p>$db = mysql_connect (""хост"",""пользователь"",""пароль"");
+          mysql_select_db (""имя_таблицы"",$db);</p>
+  
+  <p>если Вы используете <code>denwer</code>.</p>
+</blockquote>
+
+<ol start=""2"">
+<li>Вы посылаете запрос к Вашей таблице с целью сделать выборку данных.</li>
+<li>Потом, так как, скорее всего, у вас нету записей, <code>PHP</code> получает пустоту, а именно <em>False</em> - конечно же <code>boolean</code>. </li>
+<li>Так как result - это не <strike>boolean</strike>!!!!  в <code>PHP</code> происходит ошибка, так как <em>result</em> не принимает <em>false</em>.
+<hr>
+<strong>Как это исправить :</strong>
+Добавьте запись в вашу таблицу : </li>
+</ol>
+
+<blockquote>
+  <p>mysql_query (""INSERT INTO название_таблицы (поле№1, поле№2)
+   VALUES('$login','$password')""); 
+  <hr>
+  <strong>Итак, теперь проверяем - опс, у нас все получилось.!!!</strong>
+  <br>
+  <em>P.S. : Пишите если не сработало</em></p>
+</blockquote>
+",""
+"18693","","-9","<p>Браузер пользователя узнать в php нельзя, зато можно в JavaScript.</p>
+<p>Для таких целей существует объект <em>Navigator</em>, а точнее два его свойства: <em>appName</em> и <em>appVersion</em>. Давайте для начала выведем название браузера пользователю:</p>
+<pre><code>document.write(""Вы использует браузер "" + navigator.appName);
+</code></pre>
+<p>В результате Вы увидите имя браузера пользователя. Также огромное значение оказывает не только сам браузер, но и его версия. И для таких случаев используется свойство <em>appVersion</em>:</p>
+<pre><code>document.write(""Версия Вашего браузера "" + navigator.appVersion);
+</code></pre>",""
+"539595","","-8","<p>Машем флажками, пришла группа детсада, которая прочитала книжку ""C++ за полчаса"", но ни фига не поняла.</p>
+
+<pre><code>delete ptr;
+</code></pre>
+
+<p>Мил человек, ты понимаешь, что <code>ptr</code> - это переменная? В которой содержится адрес памяти, которую ты перед этим выделил (посредством <code>new</code> или <code>*alloc</code>, неважно). Ты эту память своим <code>delete</code> освободил, и теперь переменная <code>ptr</code> ссылается на хрен знает что:</p>
+
+<pre><code>*ptr = 74;
+</code></pre>
+
+<p>Включая переход на код для форматирования твоего винчестера.</p>
+
+<hr>
+
+<p>Впрочем, нагнету в яслях:</p>
+
+<pre><code>void *ptr = malloc(1234);
+*(char *)ptr = 56;
+ptr = realloc(896);
+printf( ""%c\n"", *ptr );
+</code></pre>
+",""
+"411414","","-8","<p><a href=""http://bit.ly/1CO2kid"">Вот, ссылка</a> может поможет ;)</p>",""
+"355543","","-8","<p>Перепишите все в css файл и не мучайте себя sass или less. Это маркетинговый ход и ни разу не упрощает жизнь.</p>",""
+"424900","","-8","<p>По-моему, лучше Вам перейти на PDO, дабы избежать всяких SQL и XSS-injections.</p>
+
+<pre><code>    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
+
+    $pdo = new PDO(""mysql:host=127.0.0.1;dbname=project;char=utf8"" , ""db_user"", ""userPassword2015"");
+    $req = $pdo-&gt;prepare(""select * from users where user='$username' and password='$password'"");
+    $req-&gt;execute();
+
+    if (!$req) { echo 'Логин или Пароль неверный'; }
+ else { $req-&gt;fetchAll(); echo $req['FirstName']; }
+</code></pre>
+
+<p>Но я не советую держать пароль в открытом виде.</p>
+",""
+"459337","","-8","<p>Kiss my to tuhes(Поцелуйте меня в зад) пока очередь маленькая</p>
+",""
+"171984","","-8","<p>Продолжаем разговор.</p>
+<blockquote>
+<pre><code>Не по-русски: апсалютно не шаря, передовалась, конпелятор не видет,
+</code></pre>
+<p>арфаграфия (запрашиваемые 5 ошибок тут
+есть)
+</p>
+</blockquote>
+<p>Для тебя я сообщаю, что ты должен найти ашипки ВЫШЕ, чем то, когда ты ""бла-бла"" про ашибки. Найди хотябы 5штук в любом моём комменте, который был ВЫШЕ твоего ""бла-бла"" про ""арфаграфию"".</p>
+<blockquote>
+<pre><code>Структуры. Переменная m3_u64 является структурой (если C++, так
+</code></pre>
+<p>вообще классом), тип m3_u64_t.</p>
+</blockquote>
+<p>Класс и структура - абстракция над массивом, вернее вообще над указателем. Для конпелятора нет такой штукики, как ""структура"". Мб ты мне будешь вонять, что uint64_t и указатель это разные конструкции? </p>
+<blockquote>
+<pre><code>Соглашения: хотя бы вот тут: <a href=""http://en.wikipedia.org/wiki/X86_calling_conventions."">http://en.wikipedia.org/wiki/X86_calling_conventions.</a>
+</code></pre>
+</blockquote>
+<p>Там вообще бомжовские виды, которые гцц с таргетом amd64 игнорирует. Ты думаешь я идиот и не почитал вики? Да и он тут непричем, ибо конпелятор тупо не осилил это разделить на 3регистра.</p>
+<blockquote>
+<p>То, что в данном конкретном случае
+(если бы test_1p была static) можно бы
+исхитриться по-другому, никак не
+оправдывает усложнение компилятора,
+тем более, что gcc -- проект FSF. Ну
+не надо это никому (почти). А делать
+ненужную работу -- нема дурных.</p>
+</blockquote>
+<p>Как, пример. На static конпелятору вообще похрен, и какой в ней смысл? </p>
+<p>Гцц - топ1 конпелятор, что ты там fsf начал? Я говорю обо всех конпеляторов, говнище от МС я, как и любой вменяемый человек, за конпелятор не считаю</p>",""
+"395941","","-8","<p>Извени за мой руский - в яве недавно - но динозавры говорят примерно так: был - есть и будет геморой в нашей професии и на ""тол**е"". Видроид - это главная тема, но сервак для него немало важен - ибо педиатров много но хирургов в х/100500 раз меньше по хз какой там проблеме!!!.</p>
+<p>Задачи - это, реализация на вебе + мобильных платформах - практически большинство бизнес ""проблем"". Дизайнеров и фронт людей сейчас много, - ""javascript"" -
+это не язык програмирования, но многопоточность и нагрузка на сервер с минимальными затратами - это ДЗЕН!!!!!! - и путь тебе потом в Систем архетокторы!!!! ~ 1500$ up.</p>
+<p>Если - видроид - будь добр, утечка памяти, версии через каждых пол/года или менее и т.п. + приколы с стороны сервера при обновлениями его. Если бэк, тут те не хухры мухры - здесь JAVA с большой буквы и с релизами в том =+3 с копейками документации + спецификаций с стороны ЕЕ !!!!</p>
+<h2>Бек - того стоит!!!</h2>
+<p>""Подпешись, а там увидиш"" - (с)(англ. версия - перевод одной из сцен) ""Адвокат Дьявола""</p>
+<hr>",""
+"629447","","-8","<p>Ты Даун
+Даун
+Даун
+Даун
+Даун
+Даун
+Даун
+Даун
+Даун
+Даун</p>
+",""
+"631622","","-8","<p>ya ne znayu, a ti mozhesh podscazat kak yazik pereklucit?</p>
+",""
+"639371","","-8","<p>Панасенко Андрей Станиславович мошенник и вор (1982-12-05) из Тульчинского района (Одесса, Украина)
+Пропажа вместе с товаром (ОДЕЖДА).
+После перечисления денег начинает кормить завтрашним днем, товар (одежда) так и не поставляет. 
+ЦЕНА ВОПРОСА: 29385,14 грн На 05.12.2016
++380 (93) 323 07 08, 0933230708, 093-323-07-08.
+34 года / Одесса, Украина / не женат.
+который 22 марта 2016г подозревается в изнасиловании девушки в Киеве
+БУДЬТЕ ОСТОРОЖНЫ!!!
+он
+<a href=""https://vk.com/id257691609"" rel=""nofollow noreferrer"">https://vk.com/id257691609</a>
+его дочь
+<a href=""https://vk.com/lpanasenko1"" rel=""nofollow noreferrer"">https://vk.com/lpanasenko1</a></p>
+",""
+"659390","","-8","<p>Как заказать профессиональное холодильное торговое оборудование?
+Холодильные камеры - обязательный атрибут практически любого торгового объекта, занимающегося реализацией продуктов питания.
+Если вы хотите заказать холодильный склад под ключ в г.Волгоград <a href=""http://stroyklimat.ru34.com/kypit/kypit-holodilnoe-oborudovanie/"" rel=""nofollow noreferrer"">http://stroyklimat.ru34.com/kypit/kypit-holodilnoe-oborudovanie/</a> или другом городе, вы можете обратиться в компанию ООО ""ЭкоЮгСтройКлимат"". Компания находится в г.Волгограде и профессионально осуществляет монтаж холодильного оборудования <a href=""http://stroyklimat.ru34.com/montazh/montazh-holodilnogo-oborudovaniya/"" rel=""nofollow noreferrer"">http://stroyklimat.ru34.com/montazh/montazh-holodilnogo-oborudovaniya/</a> в г.Волгограде.
+Компания сотрудничает не только с российскими производителями промышленного холодильного оборудования, но и с иностранными, являющимися мировыми лидерами и выпускающими лучшее современное холодильное торговое оборудование.</p>
+",""
+"656693","","-8","<p>Можно воспользоваться нашим решением защиты от парсинга. Подробнее можно узнать на сайте www.variti.net . Мои контакты - d.scherbakov@variti.net . Telegram @variti . Отвечу на все вопросы о нашей защите , обращайтесь. Всем хорошего дня и отличного настроения.</p>
+",""
+"657629","","-8","<p>А посмотрите в логи, там обычно все написано.</p>
+",""
+"655615","","-7","<p>Проститутки Москвы заставят Вас забыть о рутине в Вашей жизни <a href=""http://www.intimtown.in/"" rel=""nofollow noreferrer"">http://www.intimtown.in/</a> </p>
+",""
+"655990","","-7","<p>Тупые что ли? Не знаете что такое ява скрипт??? Я в шокеее... А для Лизы и Артура сделать нельзя было статью про то , как же все таки включить голосовой говнопоиск в гугле пк??? Кэти хуети</p>
+",""
+"648820","","-7","<p>[Цензура]<br>
+Симфолы c и c для javaScript - разные.</p>
+
+<pre><code>  var a = prompt(""Введите количество всего процентов:"");
+    var b = prompt(""Введите число людей которое составляет определенное число %:"");
+    var с = prompt(""Введите число процентов которое составлять опр число людей:"");
+    var d = (a * b);
+    alert(d / с);
+</code></pre>
+",""
+"635742","","-7","<p>Я нашла новый сервис, который быстро заливает большие файлы, хорошо работает. С его помощью можно отправлять больших файлы по электронной почте. Полезно для фотографов. Это www.jumbomail.me/ru/ вы сможете отправлять по электронной почте большие файлы до 5 ГБ бесплатно. Достаточно ввести адрес электронной почты получателя и загрузить их. Тут еще есть крутая фишка что можно потом просматривать фотки и слушать музыку не скачивая к себе в компьютер. Сама пользуюсь, рекомендую.</p>
+",""
+"617677","","-7","<p>beso.ru - лучшие знакомства в интернете!</p>
+",""
+"636615","","-7","<p>Проститутки Москвы заставят Вас забыть о рутине в Вашей жизни <a href=""http://www.intimtown.in/"" rel=""nofollow noreferrer"">http://www.intimtown.in/</a> </p>
+",""
+"636619","","-7","<p>Огромная база анкет на любой вкус. Вас ждут - дешевые и элитные проститутки Москвы <a href=""http://www.dosugcity.in"" rel=""nofollow noreferrer"">http://www.dosugcity.in</a> </p>
+",""
+"629570","","-7","<p>dafdafasdasfsdasfsdasfsadafsdafsdafsdafsdafsdafsdafsdafsadafsdafsdafsadfasdafsdasfddsad</p>
+",""
+"630530","","-7","<p>dqwdwqqdwqdwqdqwdwqqdwqdwqdqwdwqqdwqdwqdqwdwqqdwqdwq</p>
+",""
+"621766","","-7","<p>Используйте WinSCP! WinSCP - это графический клиент SFTP (SSH File Transfer Protocol) для Windows с открытым исходным кодом.</p>
+",""
+"603944","","-7","<p>Переустановите Outlook если не делали этого или попробуй восстановить с помощью сервиса <a href=""https://www.outlookrepaironline.com/ru/"" rel=""nofollow noreferrer"">https://www.outlookrepaironline.com/ru/</a></p>
+",""
+"602098","","-7","<p>Хотелось бы поднять вопрос о необходимости таких вопросов на StackOverflow.</p>
+
+<p>Все таки это не форум для дебилов, вопрос здесь предполагает что человек уже потратил 10-15 минут, час, 3 часа на решение задачи, чтение документации, изучение спецификаций и не смог понять решение.</p>
+
+<p>Что нас ждет дальше? 
+Вопросы:</p>
+
+<ul>
+<li>что такое переменная?</li>
+<li>как установить питон?</li>
+<li>как сложить a+b, если a=2 и b=2?!</li>
+</ul>
+
+<p><strong>Касаемо самого вопроса</strong>
+Чтобы получить список всех ключей словаря:</p>
+
+<ol>
+<li>Идете на <a href=""https://www.python.org/doc/"" rel=""nofollow noreferrer"">https://www.python.org/doc/</a></li>
+<li>Выбираете версию питона.</li>
+<li>Читаете раздел <a href=""https://docs.python.org/3/reference/datamodel.html"" rel=""nofollow noreferrer"">https://docs.python.org/3/reference/datamodel.html</a> о том какие типы данных есть в питоне.</li>
+<li>Читаете раздел <a href=""https://docs.python.org/3/library/stdtypes.html#mapping-types-dict"" rel=""nofollow noreferrer"">Mapping types</a> о том, какие методы есть у словарей в питоне.</li>
+<li>О чудо! Находите метод <code>.keys()</code>, возвращающий список ключей словаря.</li>
+<li>Profit! Спасаете нас от вопросов: 
+
+<ul>
+<li>как узнать количество ключей в словаре,</li>
+<li>как получить список значений словаря,</li>
+<li>как получить список пар ключ-значение,</li>
+<li>как объединить два словаря,</li>
+<li>как удалить ключ из словаря</li>
+<li>как получить значение ключа в словаре, если ключ существует</li>
+<li>что такое IndexError</li>
+</ul></li>
+</ol>
+
+<p>Если серьезно, нам что бд, мало пэхэпешников ""со стажем"", теперь нас ждут питонисты-идиоты?!</p>
+
+<p>Люди, прежде чем начинать программировать - возьмите учебник по языку и прочитайте от первого слова <strong>издано в таком-то году</strong> до последнего на последней странице.</p>
+",""
+"603090","","-7","<p>Кто подскажет что означает when кроме как ""когда"" и в каком контексте   <a href=""https://preply.com/question/chto-oznachaet-when"" rel=""nofollow noreferrer"">https://preply.com/question/chto-oznachaet-when</a> . Пора учить англ.</p>
+",""
+"575701","","-7","<pre><code>class Program
+    {
+
+        static void Main(string[] args)
+        {
+            const string url = ""http://www.mixonkz.net/load/1"";
+            const string host = ""127.0.0.1"";
+            const int port = 9050;
+            var parser = new Parser(url, host, port, SiteConfigEnum.Kazah);
+            parser.Parse();
+
+
+            Console.Read();
+        }
+}
+</code></pre>
+
+<p>Программа для выдачи прокси ip Advor</p>
+
+<pre><code>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Runtime.Remoting.Messaging;
+using System.Text;
+using System.Web;
+using HtmlAgilityPack;
+
+namespace HTMLParser
+{
+    class Parser
+    {
+        private string _url;
+        private readonly string _advorIp;
+        private readonly int _advorPort;
+        public Encoding PageEncoding { get; set; }
+        private HtmlDocument _htmlDocument;
+
+        List&lt;string&gt; _links = new List&lt;string&gt;();
+        Dictionary&lt;string, string&gt; _pages = new Dictionary&lt;string, string&gt;();
+        delegate void InitializeMethod();
+
+        private InitializeMethod _initialize = null;
+        private SiteConfigEnum _config;
+        private PageNodeHelper _pageNodeHelper;
+
+        public Parser(string url, string advorIp, int advorPort, SiteConfigEnum config)
+        {
+            _advorPort = advorPort;
+            _advorIp = advorIp;
+            _initialize = InitializeByProxy;
+            ConstructorInitializer(url, config);
+        }
+
+        public Parser(string url, SiteConfigEnum config)
+        {
+            _initialize = InitializeWithoutProxy;
+            ConstructorInitializer(url, config);
+        }
+
+        private void ConstructorInitializer(string url, SiteConfigEnum config)
+        {
+            _url = url;
+            _config = config;
+            _pageNodeHelper = new PageNodeHelper(config, url);
+        }
+
+        private void InitializeWithoutProxy()
+        {
+            var webClient = new WebClient
+            {
+                Encoding = Encoding.Default
+            };
+            LoadHtml(webClient);
+        }
+
+        private void InitializeByProxy()
+        {
+            var webClient = new WebClient
+            {
+                Proxy = new WebProxy(_advorIp, _advorPort),
+                Encoding = Encoding.Default
+            };
+
+            LoadHtml(webClient);
+
+        }
+
+        private void LoadHtml(WebClient webClient)
+        {
+            try
+            {
+                var page = webClient.DownloadString(_url);
+
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.LoadHtml(page);
+                PageEncoding = webClient.Encoding = htmlDocument.DeclaredEncoding;
+                _htmlDocument = htmlDocument;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+        public void Parse()
+        {
+            _initialize.Invoke();
+
+            var page = _pageNodeHelper.TryGetPageNode(_htmlDocument, 3);
+            _htmlDocument = null;
+            GoToPage(page);
+            _links = _pageNodeHelper.GetLinks(_htmlDocument);
+
+            foreach (var link in _links)
+            {
+                GoToLink(link);
+                var downloadLink = GetDownloadLink();
+                var webClient = new WebClient {Proxy = new WebProxy(_advorIp, _advorPort)};
+                webClient.DownloadFile(downloadLink.Value, ""c:\\temp\\"" + downloadLink.Key + "".mp3"");
+            }
+        }
+
+        private KeyValuePair&lt;string, string&gt; GetDownloadLink()
+        {
+            HtmlNode linkTextnode;
+            HtmlNode link;
+            string result;
+            Encoding wind1251 = Encoding.GetEncoding(1251);
+            byte[] wind1251Bytes;
+            string utf8String;
+
+            switch (_config)
+            {
+                case SiteConfigEnum.Kavkaz:
+                    linkTextnode = _htmlDocument.DocumentNode.Descendants()
+                        .FirstOrDefault(o =&gt; o.ParentNode.Name == ""h1"" &amp;&amp; o.Name == ""font"");
+
+                    wind1251Bytes = wind1251.GetBytes(linkTextnode.InnerText);
+                    utf8String = Encoding.UTF8.GetString(wind1251Bytes);
+                    link =
+                        _htmlDocument.DocumentNode.Descendants()
+                            .FirstOrDefault(
+                                o =&gt;
+                                    o.Attributes[""class""] != null &amp;&amp;
+                                    o.Attributes[""class""].Value.Contains(""download_button2""));
+                    result = GetLink(link);
+                    return new KeyValuePair&lt;string, string&gt;(utf8String, result);
+                case SiteConfigEnum.Uzbek:
+                    linkTextnode =
+                        _htmlDocument.DocumentNode.Descendants()
+                            .FirstOrDefault(o =&gt; o.ParentNode.Attributes[""class""] != null 
+                            &amp;&amp; o.ParentNode.Attributes[""class""].Value.Contains(""full-news"")
+                            &amp;&amp; o.Name == ""h1"");
+                    link =
+                        _htmlDocument.DocumentNode.Descendants()
+                            .FirstOrDefault(
+                                o =&gt;
+                                    o.ParentNode.Attributes[""style""] != null &amp;&amp;
+                                    o.ParentNode.Name == ""div"" &amp;&amp; o.Name == ""a"");
+                    result = GetLink(link);
+                    return new KeyValuePair&lt;string, string&gt;(linkTextnode.InnerText, result);
+                case SiteConfigEnum.Kazah:
+                    linkTextnode =
+                        _htmlDocument.DocumentNode.Descendants()
+                            .FirstOrDefault(o =&gt; o.ParentNode.Attributes[""class""] != null
+                            &amp;&amp; o.ParentNode.Attributes[""class""].Value.Contains(""gggg1_2"")
+                            &amp;&amp; o.Name == ""h1"");
+                    wind1251Bytes = wind1251.GetBytes(linkTextnode.InnerText);
+                    utf8String = Encoding.UTF8.GetString(wind1251Bytes);
+
+                    link =
+                        _htmlDocument.DocumentNode.Descendants()
+                            .FirstOrDefault(o =&gt; o.ParentNode.Attributes[""class""] != null
+                            &amp;&amp; o.ParentNode.Attributes[""class""].Value.Contains(""downloadknopka"")
+                            &amp;&amp; o.Name == ""a"");
+                    result = link.GetAttributeValue(""href"", null);
+
+                    return new KeyValuePair&lt;string, string&gt;(utf8String, result);
+            }
+            throw new Exception(""Need initialize configuration"");
+        }
+
+        private void GoToLink(string pageLink)
+        {
+            Dispose();
+            _url = pageLink;
+            _initialize.Invoke();
+        }
+
+        public Dictionary&lt;string, string&gt; Pages { get { return _pages; } }
+
+
+
+        private void GoToPage(HtmlNode page)
+        {
+            Dispose();
+            _url = _pageNodeHelper.GetPageUriByPAgeNumber(page.InnerText);
+            _initialize.Invoke();
+        }
+
+        private void Dispose()
+        {
+            _htmlDocument = null;
+            _url = null;
+        }
+
+        private HtmlNode GetNextPageNode(HtmlDocument document)
+        {
+            var currentPage = _pageNodeHelper.GetCurrentPageNode(document);
+            var currenPageNumber = Convert.ToInt32(currentPage.InnerText);
+            var result = GetNextPageNodeByCurrent(document, currenPageNumber);
+            return result;
+        }
+
+        private string GetLink(HtmlNode innerHtml)
+        {
+            var linkNode = innerHtml;
+            if (linkNode != null)
+            {
+                var link = linkNode.GetAttributeValue(""href"", null);
+                link = HttpUtility.HtmlDecode(link);
+                return link;
+            }
+            return null;
+        }
+
+        #region Private Helpers
+        private static List&lt;HtmlNode&gt; FilterFirstLevelNodes(HtmlDocument document)
+        {
+            var toftitle = document.DocumentNode.Descendants().Where
+                (x =&gt; (x.Name == ""a"" &amp;&amp; x.Attributes[""id""] != null &amp;&amp;
+                       x.Attributes[""id""].Value.Contains(""tid-link""))).ToList();
+            return toftitle;
+        }
+
+        private static HtmlNode GetNextPageNodeByCurrent(HtmlDocument result, int currentPage)
+        {
+            var nextPage = currentPage + 1;
+            var toftitle =
+                result.DocumentNode.Descendants()
+                    .FirstOrDefault(
+                        x =&gt;
+                            (x.ParentNode.Name == ""span"" &amp;&amp; x.ParentNode.Attributes[""class""] != null) &amp;&amp;
+                            x.ParentNode.Attributes[""class""].Value.Contains(""pagelink"")
+                            &amp;&amp; x.Name == ""a"" &amp;&amp; x.InnerText.Contains(nextPage.ToString(CultureInfo.InvariantCulture)));
+            return toftitle;
+        }
+
+        private static List&lt;HtmlNode&gt; FilterSongsNodes(HtmlDocument document)
+        {
+            var toftitle = document.DocumentNode.Descendants().Where
+               (x =&gt; (x.Name == ""div"" &amp;&amp; x.Attributes[""class""] != null &amp;&amp;
+                      x.Attributes[""class""].Value.Contains(""musicset-track__download""))).ToList();
+            return toftitle;
+        }
+    }
+    #endregion
+}
+</code></pre>
+
+<p>От себя скажу, с такими вопросами ты далеко не уйдешь. Учи win forms</p>
+",""
+"413989","","-7","<p>альт линукс - облачное решение для пидорасов</p>
+",""
+"84981","","-7","<p>Вот так, например:</p>
+<pre><code>if ($res == 'TRUE') {
+    echo ""Все ок!"";
+}    
+else {
+    exit(""Ошибка!."");        
+}
+</code></pre>",""
+"2955","","-7","<p>На самом деле не понимаю в чём суть сложности вопроса? Как я понял objective C поддерживает объектно ориентированное программирование. Чесно говоря я не работал с Obj-C, а работаю на С/С++. Во всех язвках ООП выполняет одну и ту же функцию, поэтому я объясню ""на пальцах"" как это выглядит на с++.  В языке С++ (да я думаю что и в Obj-C) есть наследование. Наследование поддерживает экземпляры класса. Например мы можем унаследовать 1 класс для 10 других экземпляров класса. Ну а объект это... Легче на примере:</p>
+<pre><code>class car
+{
+
+   public:
+
+   //Какие то переменные
+
+   protected:
+
+   //другие переменные
+
+};
+
+car BMW;
+</code></pre>
+<p>BMW в этом случае и есть класс.</p>",""
+"431954","","-7","<p>Если необходимо знание английского языка для работы, ребятки, вот: <a href=""http://elcomart.com/show/458394.html"" rel=""nofollow"">http://elcomart.com/show/458394.html</a> выбрала себе подходящего репетитора по английскому языку. Большой выбор профессионалов, индивидуальный подход, недорого. Результат не заставил ждать! Сейчас готовлюсь к поездке в Лондон на стажировку. Всем желаю удачи) </p>
+",""
+"425650","","-7","<p><strong>nekaneka</strong>,написать собственно сам алгоритм на языке java, искал в интернете, нашел примеры только на других ЯП</p>
+",""
+"431475","","-7","<p>Отличная статья про верстку письма. А кто делает дизайн письма, нашел отличную статью для них <a href=""http://css-html.ru/stati/tak-sozdaetsya-dizajn-htlm-pisma/"" rel=""nofollow"">http://css-html.ru/stati/tak-sozdaetsya-dizajn-htlm-pisma/</a></p>
+",""
+"472137","","-7","<p>""прямой"" броузер на смартфоне будет и так правильно отображать <a href=""http://apteka103.org.ua"" rel=""nofollow"">сайт</a>.</p>
+",""
+"30384","","-7","<p>Этап дебагинга должен отсутствовать совсем. Только православные тесты, как можно больше тестов.</p>",""
+"303350","","-7","<p>Есть намного проще вариант и не нужен никакой strlen.
+Пишешь string s = ....
+А потом s.length() - и все.</p>",""
+"443535","","-7","<p>C++ не нужен, правда. Это язык для старперов, которые многими поколениями с кровью и потом пишут игровые движки. Изучите лучше C# или Java, чтобы зарабатывать деньги. На этих языках можно писать код, а не пердолиться с компилятором. С++ можно изучать 10 лет и испытывать боль ниже спины оттого, что везде требования 3-6 лет опыта работы, в то время как на современных языках можно быстрее найти работу.</p>
+
+<p>Обычно в поддержку цпп выступают так называемые кресторабы. Это недалекие люди, которые повелись на моду. Как правило крестораб не знает никаких языков кроме С++, поэтому так яростно его защищает.</p>
+
+<p>Если говорить о заработке, то лучше будет выучить C# и Java. Если говорить об интересности, то интереснее будет лисп и хаскель. C# также интересен, потому что содержит огромное количество удобного синтаксического сахара.</p>
+",""
+"454613","","-7","<p>Если файл на ней ещё не стёрт, то попробуй просто для начала скопировать его несколько раз в разные директории. Если на флешке гдё-то затаился ненадёжный бит, то возможно что одна из копий просто откроется. Если нет, то, например, BadCopyPro. Ну или любые другие программы, типа RStudio» или утилиту восстановления <a href=""https://www.repairtoolbox.com/ru/illustratorrepair.html"" rel=""nofollow"">https://www.repairtoolbox.com/ru/illustratorrepair.html</a> Illustrator Repair Toolbox или как альтернативу использовать программу RRF (Rapid Recovery Files)</p>
+",""
+"449627","","-7","<p>Долбоебы. Нативный код - родной код!</p>
+",""
+"446138","","-7","<ul>
+<li>zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz</li>
+</ul>
+",""
+"443271","","-7","<blockquote>
+  <p>На самом деле львиную долю народа интересует в нанимаемых программистах три вещи:
+  умение быстро доучиваться и творчески решать задачи;
+  умение писать качественный код - то есть не содержащий багов, не содержащий ошибок в безопасности, не содержащих глупых ошибок, которые снижают быстродействие;
+  умение приспосабливать к работе в команде.</p>
+</blockquote>
+
+<p>Таким образом получаем, что программистишка - это просто дорогой сантехник или электрик, опущенец, выполняющий грязную работу в то время как начальник гребет бабло. Современный программистишка стал, наконец, тем, кем он и должен являться - быдлом, не способным жить высокими интересами, рабом и исполнителем. Программистишка это просто скот, отлично соответствующий духу времени, когда платят не за творчество, а за рутину. Поэтому те, кто хоть что-то из себя представляет в математике и алгоритмах, сразу после выпуска из универов валят за рубеж, потому что в рашке жизни нет. А фундаментальные специалисты, которые двигают прогресс далеко вперед - в рашке сосали, сосут и будут сосать, пока мировой порядок не изменится в сторону понимания ценности способности мыслить, творить и заглядывать в будущее с помощью жизненного опыта и фундаментальных знаний.</p>
+
+<p>Разница между обучением у нас и в каком-нибудь Гарварде не только в программе и в качестве преподавания, но и в связях. Люди там формируют связи и знакомства, которые важнее любого образования. Поэтому выпускники там так или иначе участвуют в создании всяких научных проектов и стартапов, либо добиваются высокого положения в корпорациях. Люди там получают офигительные навыки в своем деле, поэтому на 3-м курсе там уже работают во всяких гуглах/эпплах/микрософтах. </p>
+
+<p>А что же в рашке? Рашкинское ИТ состоит из макак и соснувших в других сферах дебилов, которые думают ""ВОТ ВЫУЧУ ЖАВУ СТАНУ САМЫМ КРУТЫМ"", а на деле будет ""ПАЦАНЫ, ПХП 5 ЛЕТ, ПОЛУЧАЮ 18 ТЫЩ, КУДА ПЕРЕКАТИТЬСЯ?"" в то время как гарвардцы и митовцы во время учебы идут на стажировку в гуглы и получают 7к долларов в месяц. Зато русский раб отлично понимает, что фундаментальные знания у нас не нужны, здесь профитнее быть быдлом и, не поднимая головы, выполнять приказы хозяина.</p>
+
+<p><a href=""https://gans-spb.livejournal.com/20663.html"" rel=""nofollow"">https://gans-spb.livejournal.com/20663.html</a></p>
+",""
+"435294","","-7","<p><a href=""http://bigpicture.ru/?p=644410"" rel=""nofollow"">купить жидкий каштан</a></p>
+
+<p>купить жидкий каштан
+купить жидкий каштан
+купить жидкий каштан
+купить жидкий каштан</p>
+",""
+"435456","","-7","<p>Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak FFak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak ak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak Fak</p>
+",""
+"487107","","-7","<p>Потому что <code>unset</code> удаляет всё с потрохами, а переменную, прописанную в классе, просто так не вырвать и не выкинуть в ящик.</p>
+",""
+"539685","","-7","<p>Все зависит от области в которой вы хотите работать: веб-разработка, мобильные приложения, системное программирование и т.д. Выбираете направление,  открываете сайт по поиску работы смотрите вакансии  зарплаты и делаете для себя выводы, вообще такие языки как C++, Java, C# - ближайшие 5-10 лет точно не куда не  денутся, так как уже проверенные временем, с большим багажом библиотек, выбирайте из них, будут советовать начать с PHP, Ruby, Python  не слушайте, не стоит делать ошибку в начале пути, мое личное мнение сначала учить надо C++, после него остальные языки выучить не составит особого труда.
+Я бы выбрал С++, C# для изучения, очень много задач из разных областей можно на них решать, например на С№ можно писать и под веб и мобильные приложения(Xamarin) причем на несколько платформ (Android,iOS,Windows) и десктопные приложения.
+Что то я увлекся. Выбирайте из С++, Java, C#</p>
+",""
+"548576","","-7","<p>Предостовляем фальшивые деньги для терминалов , банкоматов 
+Банкноты имеют все знаки различия и светятся в ультрафиолете! Простым глазом не отличить! 
+Идеально подходит для пополнения ""левых"" карт с последующим снятием в банкоматах
+Качество - Предоставляемая нами продукция имеет высокий уровень качества,что позволяет обходить известные терминалы QiWi , I-Box ,ПСКБ,
+ATM , Cash-Point , RTM
+Гарант приветствуется .
+По вопросам : ii.kristi.ii@mail.ru</p>
+",""
+"548578","","-7","<p>Предостовляем фальшивые деньги для терминалов , банкоматов 
+Банкноты имеют все знаки различия и светятся в ультрафиолете! Простым глазом не отличить! 
+Идеально подходит для пополнения ""левых"" карт с последующим снятием в банкоматах
+Качество - Предоставляемая нами продукция имеет высокий уровень качества,что позволяет обходить известные терминалы QiWi , I-Box ,ПСКБ,
+ATM , Cash-Point , RTM
+Гарант приветствуется .
+По вопросам : ii.kristi.ii@mail.ru</p>
+",""
+"489825","","-7","<p>Новый новостной ресурс: предлагаем вашему вниманию только важные 
+на наш взгляд новости, которые могут повлиять на наш образ жизни.
+Новости берём из СМИ, форумов, ТВ, радио разных стран.
+Так же на сайте есть страница, где собраны большинство живых 
+форумов русскоговорящих эмигрантов из разных странах.
+Вообщем заходите посмотреть, хорошего вам дня!</p>
+",""
+"504735","","-7","<p>Shop55OMS Шишки, LSD ,Кокаин ,Амфетамин , Гашиш, Экстази Отправка по РФ
+<a href=""http://shop55oms.weebly.com"" rel=""nofollow"">http://shop55oms.weebly.com</a></p>
+",""
+"479287","","-6","<p>Из двух зол выбирают меньшее:) Это Жава без вопросов:D</p>
+",""
+"521550","","-6","<p>Способов очень много. От флагов, до эксепшн. Но я бы делал двойной break
+break;break;</p>
+",""
+"529990","","-6","<p>Зависит что за массив, конечно...</p>
+
+<p>Конвертируешь в <code>Set&lt;String&gt;</code></p>
+
+<pre><code>new HashSet&lt;String&gt;(Arrays.asList(array));
+
+Set&lt;String&gt; commonOnes = biggerSet.retainAll(smallerSet);
+biggerSet.removeAll(commonOnes).add(smallerSet.removeAll(commonOnes))
+</code></pre>
+
+<p>пример:</p>
+
+<pre><code>String[] ID1={""19"",""20"",""12"",""13"",""14""};
+String[] ID2={""10"",""11"",""12"",""13"",""15""};
+
+// Result={""14"",""15"",""19"",""20"",""10"",""11""};
+
+Set&lt;Integer&gt; union = new HashSet&lt;Integer&gt;(Arrays.asList(ID1));
+union.addAll(Arrays.asList(ID2);
+
+Set&lt;Integer&gt; intersection = new HashSet&lt;Integer&gt;(Arrays.asList(ID1));
+intersection.retainAll(Arrays.asList(ID2);
+
+union.removeAll(intersection);
+</code></pre>
+",""
+"507645","","-6","<p>MySQL command line. Графические IDE при изучении основ могут отвлекать лишними телодвижениями- настройка интерфейса, и т.д. и т.п.)</p>
+",""
+"508330","","-6","<p>Шаг 1. Правой кнопкой мыши щелкните “базы данных” и опцию <code>Attach</code>, чтобы открыть диалоговое окно выбранной Базы данных.</p>
+
+<p>Шаг 2. Нажмите на кнопку “Добавить”, чтобы открыть диалоговое окно <code>Locate Database Files</code>.</p>
+
+<p>Шаг 3. Введите полное имя файла <code>.mdf</code>, как показано в следующем примере: C: файлы \ Data \ my_data.mdf
+Нажмите кнопку ""OK"". <code>SQL Server Management Studio</code> загружает базу данных из файла <code>.mdf</code>.
+Все!
+Прога тоже может пригодиться
+<a href=""http://www.oemailrecovery.com/ru/sql_recovery.html"" rel=""nofollow"">http://www.oemailrecovery.com/ru/sql_recovery.html</a></p>
+",""
+"549215","","-6","<pre><code>public static void main(String[] args) {
+    Integer a;
+    Integer b;
+
+    Scanner scanner = new Scanner(System.in);
+
+    boolean flag = false;
+    try{
+    while (!flag) {
+        System.out.print(""Input A: "");
+        a = getInteger(scanner);
+        if(a != null){
+            System.out.print(""Input B: "");
+            b = getInteger(scanner);
+            if(b != null){
+                System.out.println(String.format(""Sum: %d"", a + b));
+            }
+        }
+    }
+    }
+    catch(Exception e){
+        System.out.println(""Bye!"");
+    }
+}
+
+private static Integer getInteger(Scanner scanner) throws Exception {
+    String input = scanner.nextLine();
+    input = input.trim();
+    Integer number = null;
+    if (!""stop"".equals(input)) {
+        try {
+            number = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            System.out.println(""Ошибка ввода"");
+        }
+    }
+    else{
+        throw new Exception(""Bye!"");
+    }
+    return number;
+}
+</code></pre>
+",""
+"549692","","-6","<p>Привет все мои зрители я Ребекка Диш я 28years Я замужем за последнее время г-н Ричард воды я из долларов США Техас У меня есть один детей, мой покойный муж заразил меня ВИЧ-инфекцией, прежде чем он умер, я потратил столько денег на покупку наркотиков из больницы надеются, что он будет вылечен до сих пор все было напрасно .i связался так много травяных врачей, которые они действительно пытались там лучше, но не смог предоставить для меня возможное лечение, к счастью, мой хороший друг рассказал мне о большой травяной медицина Heller позвонить доктору МРС, который также помочь ей, когда она была затронута с вызова болезнь генитальным герпесом она представить меня человеку позвонить доктору МРС у меня не было никакого выбора, кроме как выполнить то, что д-р МРС хотят предложить мне, потому что я действительно хочу это заболевание быстро пошло от моей системы, так что я сделал все, что доктор сказал МРС и он в конце концов доказать мне, что он действительно мощный травяной медицины Геллер Доктор МРС действительно вылечить me.dr МРС благодарный травяные Heller благословит Бог купить, спасибо за помощь и хорошее время я работал с вами, благодаря д-ру МРС для принятия мою жизнь лучше сегодня. вы связаться с ним для любого вида болезни на визы по электронной почте или по телефону drifaolokune@gmail.com +2347061824880</p>
+",""
+"436226","","-6","<p>Единственный БЕСПЛАТНЫЙ софт автопостинга в Фейсбук, который работает на данный момент. Не использует API и 100% эмулирует человека. Скачать можно здесь:
+<a href=""http://www.pohmeliy.com/ru/download"" rel=""nofollow"">http://www.pohmeliy.com/ru/download</a></p>
+",""
+"442287","","-6","<p>Есть правила кода общие для всех языков, я скажу то что помню.
+Оформляешь код чтобы у него были отступы и тд. Разбиваешь на функции только в том случае если функция будет использоватся много раз в разных участков кода. В активностях лучше размещять тот код который нужен данной активности, также этот код потом уничтожается вместе с активностью когда он не нужен. На классы делить это если код встречается во многих активностях, так даже и обновлять легче и отладку легче делать. Следить за статическими переменными, они остаются в памяти и их вызвать можно из любого кода, а когда они не нужны они будут висеть. Я переменные раставлять пытаюсь так, например в oncreate кладу то что должно выполнится один раз и записатся все эти ссылки активности в глобальные, чтобы не делать лишних движений программе в коде. Использовать минимум костылей, то что уже реализовано в джаве или андроиде, не изобретать:) И этоже джава тут надо следить за функциями null:) а так существует много способов письмы кода, но я говорю как я делаю:)</p>
+",""
+"443201","","-6","<p>здесь было невежливое содержимое, но его удалили. Поставьте минус.</p>
+",""
+"446137","","-6","<p>яя
+zzzzzzzzzzzzzzzzzzzzaaaaaaaaaaaaaaaaaaaaaaa</p>
+",""
+"450779","","-6","<p>Where is the code of a bitch? I fucked your mouth</p>
+",""
+"117111","","-6","<p>10 возмутительных багов IE и пути их решения  Сегодня я намерен представить вам 10 самых распространенных багов, имеющих место в браузерах IE, а так же расскажу как их избежать.  Вступление  В практике каждого веб-разработчика были проблемы, связанные с непониманием  браузерами IE некоторых элементов кода. И я как разработчик тоже постоянно  сталкиваюсь с такими причудами IE, что порой просто хочется биться головой об  стенку! Однако, время идет, мы учимся на своих ошибках, хотя правильней будет  сказать не своих, а браузера IE, и начинаем понимать и привыкать к его странному  поведению. Нам приходится с этим мириться, так как еще есть пользователи,  продолжающие пользоваться 6 версией IE. Самый лучший способ  <a href=""http://ruseller.com/lessons.php?rub_id=28&amp;id=469"">...читать дальше.</a></p>",""
+"453766","","-6","<p>Скорее всего у вас поврежденные ключи реестра Windows, связанные с Photoshop.exe / Adobe Photoshop CS3.
+Прочитайте информацию на этом сайте <a href=""http://windowsmax.net/topic/2375-posovetuite-soft-dlia-photoshop/?p=51502"" rel=""nofollow"">http://windowsmax.net/topic/2375-posovetuite-soft-dlia-photoshop/?p=51502</a>
+Так же воспользуйтесь моей инструкцией,лично мне не раз помогала:
+1.Заходим в «мой компьютер», выделяем нужный диск или папку.
+2. Начинаем сканирование выбранного диска.
+3. После сканирования программа отобразит все файлы. Удаленные файлы и папки будут помечены специальным красным крестиком.
+4.Выделяем нужные нам файлы и жмем кнопочку «Восстановить».
+Еще есть универсальное и быстрое решение,программка очень быстро и эффективно работает
+<a href=""https://www.repairtoolbox.com/ru/photoshoprepair.html"" rel=""nofollow"">https://www.repairtoolbox.com/ru/photoshoprepair.html</a></p>
+",""
+"241162","","-6","<p>Нафек нано vi или еще круче emacs. Нано вообще не вариант.</p>
+
+<p>Ответ на вопрос: попробуйте <a href=""https://askubuntu.com/questions/90013/how-do-i-enable-syntax-highlighting-in-nano"">эту линку</a> поизучать и <a href=""http://how-to.wikia.com/wiki/How_to_use_syntax_highlighting_with_the_GNU_nano_text_editor"" rel=""nofollow noreferrer"">вот эту</a>.
+А тут сравнить можно как <a href=""http://www.bytemods.com/howto/94/turn-on-syntax-highlighting-for-vim-and-nano"" rel=""nofollow noreferrer"">включается синтаксис в Vi Nano</a></p>
+",""
+"469545","","-6","<p>Парсинг - очень кропотливый объемный по времени труд. Я держу ИМ , парсил его с помощью их parsing.by Откликнулись, оперативно и недорого сделали все, как я хотел. Советую, если что ;)</p>
+",""
+"494009","","-6","<p>Во ты шаришь!
+Код вообще четкий!</p>
+",""
+"495442","","-6","<p>начинай со строготипизированных языков ( к ним относится java ).</p>
+
+<p><a href=""https://stepic.org/"" rel=""nofollow"">советую</a>.</p>
+
+<p>на данном ресурсе есть достаточно понятных hello world курсов.</p>
+",""
+"495448","","-6","<p>Я бы посоветовал СИ# для игр, но python тоже хорош особенно для начинающим </p>
+",""
+"497808","","-6","<p>-5 дизлайков - типичный пример C# программиста. Вот об этом я вам и говорю.</p>
+",""
+"454975","","-6","<p>Попробуй это <a href=""http://kak-iskat.ru/?q=javascript%20%D0%BF%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%B8%D1%82%D1%8C%20%D0%BF%D1%83%D1%81%D1%82%D0%BE%D0%B9%20%D0%BE%D0%B1%D1%8A%D0%B5%D0%BA%D1%82%20"" rel=""nofollow"">тЫц</a>, может поможет</p>
+",""
+"171752","","-6","<p>JDBC в помощь. Туда SQL запрос передавай. классика. Что не ясно спросишь.</p>",""
+"9846","","-6","<p>Это означает диапазон IP  адресов от 192.168.0.0 до 192.168.0.16</p>",""
+"255002","","-6","<p>Если вы за открытый исходный код, свободное программное обеспечение и т.д. - Python + Django. Я лично не люблю мелкософт.
+По поводу литературы: ее по django почти нету потому, что у них очень хорошая документация. Я считаю ее вообще одной из лучших документаций которые я когда-либо видел. 
+А вообще - Scala + play</p>",""
+"464558","","-6","<p>Идите лесом вас никто не звал!!!!!понятно?????</p>
+",""
+"431476","","-6","<p>Отличная статья. Вот нашел еще вариант как можно легко отправить HTML письмо <a href=""http://css-html.ru/stati/mozilla-thunderbird/"" rel=""nofollow"">http://css-html.ru/stati/mozilla-thunderbird/</a></p>
+",""
+"87080","","-6","<p><strong>Для начала создаешь файл breadcrumbs.php и в нем прописываешь следующий код:</strong></p>
+<pre><code>&lt;div id=""breadcrumbs""&gt;
+      &lt;?php if (is_home()) { ?&gt;
+
+     &lt;?php } elseif (is_single()) { ?&gt;
+         &lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; /            
+         &lt;?php foreach((get_the_category()) as $cat) { 
+         $cat=$cat-&gt;cat_ID; 
+         echo(get_category_parents($cat, TRUE, ' / ')); } ?&gt;Пост ""&lt;?php the_title(); ?&gt;""
+
+     &lt;?php } elseif (is_page()) { ?&gt;
+         &lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; / Страница ""&lt;?php the_title(); ?&gt;""
+
+     &lt;?php 
+         } elseif (is_category() and get_category($cat)-&gt;parent) { ?&gt;
+         &lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; /            
+         Рубрика &lt;?php foreach((get_the_category()) as $cat) { 
+                        $cat=$cat-&gt;cat_ID; 
+         echo(get_category_parents($cat, TRUE, ' / ')); } ?&gt;
+
+     &lt;?php 
+         } elseif (is_category()) { ?&gt;
+         &lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; /            
+         Рубрика ""&lt;?php {echo single_cat_title();} ?&gt;""
+
+     &lt;?php } elseif (is_tag()) { ?&gt;&lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; / Архив тега
+
+     &lt;?php } elseif (is_day()) { ?&gt;&lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; /  Архив записей
+
+     &lt;?php } elseif (is_month()) { ?&gt;&lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; / Архив записей
+
+     &lt;?php } elseif (is_year()) { ?&gt;&lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; /  Архив записей
+
+     &lt;?php } elseif (is_author()) { ?&gt;
+           &lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; / Страница автора
+
+     &lt;?php } elseif (is_search ()) { ?&gt;
+           &lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; / Результаты поиска
+
+     &lt;?php } elseif (is_404()) { ?&gt;
+           &lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; / Ошибка 404
+
+     &lt;?php } elseif (is_page('map.php')) { ?&gt;
+           &lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; / Карта советов
+
+     &lt;?php } elseif (is_page('tag_page.php')) { ?&gt;
+           &lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; / Карта меток
+
+     &lt;?php } elseif (is_page('contact.php')) { ?&gt;
+           &lt;a href=""&lt;?php echo get_option('home'); ?&gt;""&gt;&amp;laquo; На главную&lt;/a&gt; / Форма для контактов
+
+     &lt;?php } elseif (isset($_GET['paged']) &amp;&amp; !empty($_GET['paged'])) { ?&gt;&lt;h3&gt;Архивы&lt;/h3&gt;
+        &lt;?php } ?&gt;
+    &lt;/div&gt;
+</code></pre>
+<p><strong>После этого на любой странице прописываешь следующее (то есть подключаешь):</strong> </p>
+<pre><code>&lt;?php include (TEMPLATEPATH. '/breadcrumbs.php'); ?&gt;
+</code></pre>
+<p><strong>Можешь также в самом скрипте прописать css (breadcrumbs.php)</strong></p>
+<pre><code>&lt;style&gt;
+#breadcrumbs {  
+    width: auto;
+    font-size: 13px;
+    color: #000;
+  text-align : left; 
+  overflow : hidden; 
+}
+#breadcrumbs a, #breadcrumbs a:visited { 
+  color : #808080; 
+  text-decoration : none; 
+  outline:none;
+} 
+#breadcrumbs a:hover, #breadcrumbs a:active { 
+  color : #000; 
+  text-decoration : none; 
+  outline:none;
+}
+&lt;/style&gt;
+</code></pre>
+<p>Да и вообще, можно на каждой странице прописать ссылки и красиво это организовать, не замарачиваясь со скриптами.</p>",""
+"431821","","-6","<p>такую же проблему наблюдаю и на своем сайте <a href=""http://comixhere.ru/"" rel=""nofollow"">http://comixhere.ru/</a></p>
+",""
+"429622","","-6","<p>так напиши в чем ошибка была, мб кому то ещё понадобится.</p>
+
+<p>ненавижу таких чмошников, просят у всех всё, а сами конченые твари, нихуя никому никогда</p>
+",""
+"431091","","-6","<p>у меня такая же проблема была раз пять. И я всегда его принудительно закрывал. На шестой я понял что надо терпеливо дождаться пока иллюстратор сохранит файл. Как то читал о восстановлении файла с помощью Recovery Toolbox for Illustrator на одном форуме софт этот хвалили, действенный и файлы битые лечит.
+<a href=""https://illustrator.recoverytoolbox.com/ru/"" rel=""nofollow"">https://illustrator.recoverytoolbox.com/ru/</a></p>
+",""
+"431191","","-6","<p><a href=""http://riotfree.com/riven/17547"" rel=""nofollow"">http://riotfree.com/riven/17547</a> общая схема примерно такая. Возможности использовать в корыстных целях нету, только если есть бреши у соц сети. На уровне апи такой возможности естественно не предусматривают.</p>
+",""
+"423433","","-6","<p>Имеется готовое решение всего этого вопроса. Авторизация, платежи QIWI и т.д.
+Пишите в skype in1ernal_error</p>
+",""
+"422337","","-6","<p>бла-бла
+бла-бла-бла-бла
+бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла!</p>
+",""
+"432714","","-6","<p>Отгадайка (Продажа/обмен) (FLASH)</p>
+
+<p>Ссылка на приложение:
+<a href=""http://vk.com/app2376658_77967313"" rel=""nofollow"">http://vk.com/app2376658_77967313</a></p>
+
+<p>В исходнике идёт:
+-Исходник лаунчера
+-Исходник прелоадера
+-Дамп БД
+-Серверная чать (php)</p>
+
+<p>По обмену/продаже пишите сюда: <a href=""http://vk.com/kaaaktuz"" rel=""nofollow"">http://vk.com/kaaaktuz</a>
+Цена: договорная.</p>
+",""
+"113157","","-6","<p>Нужно:</p>
+<ol>
+<li>Выключить компьютер.</li>
+<li>Потанцевать вокруг компьютера с бубном.</li>
+<li>Включить компьютер.</li>
+<li>Радоваться правильному времени.</li>
+</ol>
+<p><strong>Инфа 146%.</strong></p>",""
+"87895","","-6","<p>Я думаю что для успешного становления веб программистом сначала из Html необходимо узнать про теги div img a span и основные (body head title meta link) этого будет достаточно чтоб изучать CSS (лучше пока изучить CSS2) потом следует прочитать книгу ""JavaScript-руководство пользователя Пол Вилтон и Джерреми МакПик"" паралельно осваивая основы Ajax потом прочитать книги про серверные языки например PHP затем читать книги про Ajax (напр книгу ""AJAX в действии"") паралельно лучше скачать DENWER и практиковаться удачи! ps: Незабудте посьтавить галочку:)<br>
+</p>",""
+"1822","","-6","<blockquote>
+<p>name.text+family.Text+email.text</p>
+</blockquote>
+<p>=&gt; name.text+'&amp;'+family.Text+'&amp;'+email.text</p>
+<pre><code>n:=length(name.text);
+for i:=1 to n do
+if(name.text[i]='&amp;') then name.text[i]='_';
+
+n:=length(family.text);
+for i:=1 to n do
+if(family.text[i]='&amp;') then family.text[i]='_';
+
+n:=length(email.text);
+for i:=1 to n do
+if(email.text[i]='&amp;') then email.text[i]='_';
+</code></pre>",""
+"131366","","-6","<p>Ну про женщин программистов всегда говорили, что они как морские свинки... И не свинки, и не морские... Так что делаем выводы :)</p>",""
+"173344","","-6","<p>у меня есть вариант - у тебя комп одноедерный </p>",""
+"202180","","-6","<pre><code>    str.Substring(0, 4);
+    str.Remove(4);
+    str.Replace()
+</code></pre>",""
+"216824","","-6","<p>Решил таким образом, тупо в main.php выше всех написал к примеру:</p>
+<pre><code>&lt;?
+$phone = Yii::app()-&gt;db-&gt;createCommand()
+    -&gt;select('title')
+    -&gt;from('contacts')
+    -&gt;where('tel=:tel', array(':tel'=&gt;'tel'))
+    -&gt;queryRow();
+?&gt;
+</code></pre>",""
+"407139","","-6","<p>Здесь очень хорошо раскручивают приложения <a href=""http://apptools.ru/ref/210654"">http://apptools.ru/ref/210654</a>  Установки, оценки, отзывы, гео таргетинг. Регистрация для Вас справа, также нажав на возможности системы можете более детально ознакомиться с ними.</p>",""
+"93170","","-6","<p>Да  что? хм?? я тут читаю </p>
+<hr>
+<p>В js MVC это ИМХО бред сивой кобылы...</p>
+<hr>
+<p>человек видимо так и не понял что это такое вообще, 
+это такая штука, что разделить логику и вывод на две части и не важно где и на чем это использовать, 
+видимо тварищ заблудился и трёх соснах и обижен на весь МИР, чтож это его дело, продолжай в том-же духе никто не против, только вот в чем не-задача, зачем это придумали и столько вокруг этого споров и прочих не понятных высказываний.
+Не ищите черную кошку в черной комнате, да ещё в которой нет кошки.
+<a href=""http://mvccmv.16mb.com/index.php?page=1"">читаем и таем</a><br>
+</p>",""
+"236631","","-6","<p>Самый мощный и быстрый парсер, автодополнение и подсветка - в kdevelop'e. Единственный парсер, который с ним может соревнаться - это либшланг, но он нереально тормазит - ты будешь автодополнения секунды 2 ждать.</p>
+<blockquote>
+<p>поиск / замена с поддержкой регулярных
+выражений</p>
+</blockquote>
+<p>Это есть в любом тектовом редакторе, самая примитивная функция.</p>
+<blockquote>
+<p>быстрый компилятор.</p>
+</blockquote>
+<p>Никакая ide не работает с конпелятором на прямую - она работает через билдсистему, а туда какой хочешь - такой и фигачь конпелятор.</p>
+<p>Gcc - самый фичастый и способный к гинерации идеального кода конпелятор. Шланг слаб. ICC - нацелен на слишком малоумеющих, рядовых программистов. Умеет превращать выхлоп паскалистов/фортранистов в более-менее нормальный код.</p>
+<p>Про отладчики я ничего не знаю, ибо не юзаю.</p>
+<p>Кути - это основа kdevelop'a. </p>
+<p>Всё зависит от того, кто ты - если ты писатель, то qtcreator тебе подойдёт. Если ты больше читаешь сложный код - кутикреатор нихрена не подойдёт.</p>
+<p>Ещё есть всякие штуки на жаве - после визуалстудии тормаза не заметишь, погляди всякие еклипсы.</p>",""
+"245230","","-6","<p>И не изучишь. ""Pascal и Delphi"" - бесполезно, хоть немного, хоть много. Ничего не прийдётся изучать, с первого. Начать что? Если ты не начнёшь - ты ничему и не научишься. </p>
+<p>Бесполезно, обучения нет.</p>
+<p>Есть 2 типа недовузов - это купленная мелкософтом говно, задача которого заманить тебя халявой и подсодить на вендорлок. Тебе расскажут о том, каким ты крутым будешь - как нужен сейчас сишарп и венда. Научишься накидывать кнопочки на формачку за 5лет - пойдёшь куда-то, поймёшь, что ты ничто и пойдёшь либо за доширак работать и изучать всё с нуля, либо не работать и изучать всё с нуля, либо работать за доширак и не узичать нихрена, с надежно на то, что тебе фортанёт.</p>
+<p>Второй тип фузов - это постсовковковая покладуха на всё. Там остались пара преподователей, которые за били на всё и их знания на уровне паскаля, доса и 80-х годов. В реально мире любое из этих 3-х говн бесполезно. В этом мире ты либо живёшь в мейнстриме за доширак - мейнстрим уже давно забил на развитие, там развитие сосредоточенно на том, чтобы программировать могла любая макака, и чем за меньше дошираков в месяц она работает - тем лучше, и чем больше таких макак - тем лучше.</p>
+<p>Либо ты вылитаешь из него(мира), либо идёшь вперёд. Вылетанцы тебя ничему не научат. Твой надежда на то, что тебе попадётся не вылетанец, а таких единицы.</p>
+<p>Тут всему ты учишься сам, либо ты ничто, если ты конечно хочешь что-то из себя реально  представлять. В этом мире ты идёшь по головам, с самого дна - ты должен признавать говно, унижать, сливать, втаптывать в говно. В противном случаее ты сгинешь где-то на задворках мейнстрима, заедушным ваятелем говна за доширак, так ничего в мире не принеся - бесполезный потребить.</p>
+<p>Ты либо тратишь тысячи своего времени на это, причем времяни на то, что тебя реально развивает. Накидывание кнопочек на формочку развивает разве только детсадовца 3-х лет, не более. И чем понтовей ты становишься - тем больше тебе надо в это вливать времени.</p>
+<p>Это я про ""изучать"". Если вуз нужен для работы - учить надо что дают, лишбы не отчислили, если бюджет. Попутно учить какую-нибудь жабу/сишарпик/пхп,питончики,руби и ные уги - и потом пойти в веб, деревенский недоинтерпрайз( тот же веб, вид сбоку), либо в гуйню. Если не совсем идиот - это осиливает за годик-другой на уровне 90% - дальше уже следуйте вашим законам.</p>
+<p>С этой точки зрения анальный мелкасофт-вуз будет даже лучше.</p>",""
+"415586","","-6","<p>Добрый вечер всем вам: Я человек, который предлагает кредиты деньги людям, нуждающимся и в обществе, которые находятся в финансовом кризисе. Свяжитесь со мной через мой адрес электронной почты для всех ваших кредитных заявок от 10000 € до € 5000000. Каждый народ должен связаться со мной прислал мне свой адрес электронной почты, поэтому я могу ответить. Не стесняйтесь обращаться ко мне по электронной почте: (jacqueline.baeske@mail.ru)</p>
+",""
+"415591","","-6","<p>Доброе утро, дамы и господа.<br>
+Я деловая женщина, которая предлагает кредиты деньги людям, нуждающимся в срочной ссуды. Это предложение для жителей Швейцарии и крупного бизнеса. Земля 5000 евро до 5.000 000 евро для всех запросов около 3% годовых. Частные лица, компании и другие свяжитесь со мной через мой адрес электронной почты, и вы будете есть решение Ваших забот. (jacqueline.baeske@mail.ru)</p>
+",""
+"415588","","-6","<p>Я женщина швейцарского случае, и я предлагают кредиты деньги людям, нуждающимся. Я предлагаю кредиты € 5000 до € 5.00.000 для всех людей и общества в необходимости кредита. свяжитесь со мной через мой адрес электронной почты для всех ваших денег необходимость. Вот ваш почтовый. (jacqueline.baeske@mail.ru)</p>
+",""
+"416207","","-6","<p>Взлом, угон:</p>
+
+<ul>
+<li><p>ICQ</p></li>
+<li><p>email</p></li>
+<li><p>сайтов</p></li>
+<li><p>одноклассников</p></li>
+<li><p>вконтакте</p></li>
+<li><p>форумов</p></li>
+<li><p>анкет знакомств</p></li>
+<li><p>РАСПЕЧАТКА SMS СООБЩЕНИЙ и ЗВОНКОВ !</p></li>
+</ul>
+
+<p>взлом email, взлом mail, взлом yandex, взлом rambler, взлом hotmail, yahoo, gmail.</p>
+
+<p>взлом вконтакте взлом одноклассники взлом icq</p>
+
+<p>Окажем быструю помощь Вам.</p>
+
+<p>БЫСТРО! КАЧЕСТВЕННО! ПРОФЕССИОНАЛЬНО!</p>
+
+<p>Обращайтесь. Ответим на все Ваши вопросы.</p>
+
+<p>ICQ 621-286-052</p>
+
+<h1>email: vzlom.ivan@gmail.com</h1>
+
+<h1>=</h1>
+
+<h1>=</h1>
+
+<h1>=</h1>
+
+<h1>=</h1>
+
+<h1>=</h1>
+
+<h1>=</h1>
+
+<h1>=</h1>
+
+<h1>=</h1>
+
+<p>Взлом, угон:</p>
+
+<ul>
+<li><p>ICQ</p></li>
+<li><p>email</p></li>
+<li><p>сайтов</p></li>
+<li><p>одноклассников</p></li>
+<li><p>вконтакте</p></li>
+<li><p>форумов</p></li>
+<li><p>анкет знакомств</p></li>
+<li><p>РАСПЕЧАТКА SMS СООБЩЕНИЙ и ЗВОНКОВ !</p></li>
+</ul>
+
+<p>взлом email, взлом mail, взлом yandex, взлом rambler, взлом hotmail, yahoo, gmail.</p>
+
+<p>взлом вконтакте взлом одноклассники взлом icq</p>
+
+<p>Окажем быструю помощь Вам.</p>
+
+<p>БЫСТРО! КАЧЕСТВЕННО! ПРОФЕССИОНАЛЬНО!</p>
+
+<p>Обращайтесь. Ответим на все Ваши вопросы.</p>
+
+<p>ICQ 621-286-052</p>
+
+<h1>email: vzlom.ivan@gmail.com</h1>
+
+<h1>=</h1>
+
+<h1>=</h1>
+
+<h1>=</h1>
+
+<h1>=</h1>
+
+<p>Взлом, угон:</p>
+
+<ul>
+<li><p>ICQ</p></li>
+<li><p>email</p></li>
+<li><p>сайтов</p></li>
+<li><p>одноклассников</p></li>
+<li><p>вконтакте</p></li>
+<li><p>форумов</p></li>
+<li><p>анкет знакомств</p></li>
+<li><p>РАСПЕЧАТКА SMS СООБЩЕНИЙ и ЗВОНКОВ !</p></li>
+</ul>
+
+<p>взлом email, взлом mail, взлом yandex, взлом rambler, взлом hotmail, yahoo, gmail.</p>
+
+<p>взлом вконтакте взлом одноклассники взлом icq</p>
+
+<p>Окажем быструю помощь Вам.</p>
+
+<p>БЫСТРО! КАЧЕСТВЕННО! ПРОФЕССИОНАЛЬНО!</p>
+
+<p>Обращайтесь. Ответим на все Ваши вопросы.</p>
+
+<p>ICQ 621-286-052
+email: vzlom.ivan@gmail.com</p>
+",""
+"419410","","-6","<p>Есть еще одиг способ. Можно посмотреть на <a href=""http://hack-pda.ru"" rel=""nofollow"">http://hack-pda.ru</a></p>
+",""
+"421032","","-6","<p>Смотри сервис <a href=""https://semysms.net"" rel=""nofollow"">https://semysms.net</a> и сам сделай из любого телефона, смс сервис!</p>
+",""
+"421024","","-6","<p>Смотри сервис <a href=""https://semysms.net"" rel=""nofollow"">https://semysms.net</a> и сам сделай из любого телефона смс сервис</p>
+",""
+"421027","","-6","<p>Смотри сервис <a href=""https://semysms.net"" rel=""nofollow"">https://semysms.net</a> и сам сделай из любого телефона, смс сервис!</p>
+",""
+"587301","","-6","<pre><code>for (int x=0; x&lt;3; ++x, x--);
+</code></pre>
+",""
+"594974","","-6","<p>А ларчик просто открывался!
+Поставил задержку между X и Y:
+<code>
+using System.Threading;
+ Thread.Sleep(100);
+</code>
+Спасибо @koks_rs, ну и всем остальным. Поставили на путь истинный!</p>
+",""
+"605724","","-6","<p>Подскажите пожалуйста, что означает insert? И в каком контексте его лучше использовать? <a href=""https://preply.com/question/chto-oznachaet-insert"" rel=""nofollow noreferrer"">https://preply.com/question/chto-oznachaet-insert</a></p>
+",""
+"607977","","-6","<p>Надо создавать свои проекты и не гнаться за всякими фреймворками </p>
+",""
+"563161","","-6","<p>В документации есть все примеры , <a href=""http://expressjs.com/en/4x/api.html"" rel=""nofollow"">http://expressjs.com/en/4x/api.html</a>
+если что-то не работает то надо разбираться предметно.</p>
+
+<p>req.body
+Contains key-value pairs of data submitted in the request body. <strong>By default, it is <em>undefined</em></strong>, and is populated when you use body-parsing middleware such as body-parser and multer.</p>
+
+<p>The following example shows how to use body-parsing middleware to populate req.body.</p>
+
+<pre><code>var app = require('express')();
+var bodyParser = require('body-parser');
+var multer = require('multer'); // v1.0.5
+var upload = multer(); // for parsing multipart/form-data
+
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+
+app.post('/profile', upload.array(), function (req, res, next) {
+  console.log(req.body);
+  res.json(req.body);
+});
+</code></pre>
+",""
+"614682","","-6","<p>EU GOSTARIA MUITO DE APRENDER ISSO mas prefiro <a href=""http://frasesworlds.com/"" rel=""nofollow noreferrer"">frasesworlds.com</a></p>
+",""
+"624354","","-6","<p>If someone is lloking for russian conversation skype I can propose you <a href=""https://preply.com/en/russian-by-skype"" rel=""nofollow noreferrer"">https://preply.com/en/russian-by-skype</a> . It's a great platform with good tutors. I used different ways to learn the language, but this way was the best. It was helpful for me. </p>
+",""
+"603259","","-6","<p>Я бы для начала проверил HDD. Сдается мне, что эта ошибка не с проста! Переустановите Outlook если не делали этого. Еще я знаю что как то можно pst к ost привести и вытащить затем данные, так же знаю программу которая возвращает данные <a href=""https://outlook.recoverytoolbox.com/ru/"" rel=""nofollow noreferrer"">https://outlook.recoverytoolbox.com/ru/</a></p>
+",""
+"616775","","-6","<pre><code>// Подключаем зависимости сборки
+using System; 
+using System.Collections.Generic; 
+using System.ComponentModel; 
+using System.Data; 
+using System.Drawing; 
+using System.Linq; 
+using System.Text; 
+using System.Threading.Tasks; 
+using System.Windows.Forms; 
+using System.IO; 
+using System.Runtime.InteropServices; 
+using System.Threading; 
+
+//Объявляем пространство имен
+namespace WindowsFormsApplication5 
+{ 
+    // объявляем класс формы
+    public partial class Form1 : Form 
+    { 
+        //какая то строка
+        String u = """"; 
+        // конструктор формы
+        public Form1() 
+        { 
+            InitializeComponent(); 
+        } 
+
+        // вытаскиваем метод из winapi библиотеки для асинхронного получения состояния клавиш (нажата, отжата и т.д.)
+        [DllImport(""user32.dll"")] 
+        public static extern int GetAsyncKeyState(Int32 i); 
+
+        // тоже самое, только метод для получение всех foreground окон (на переднем плане)
+        [DllImport(""user32.dll"")] 
+        static extern int GetForegroundWindow(); 
+
+        // тоже самое, только для получения текста с окна (caption наверно)
+        [DllImport(""user32.dll"")] 
+        static extern int GetWindowText(int hWnd, StringBuilder text, int count); 
+
+        // Объявляем событие на загрузку формы
+        private void Form1_Load(object sender, EventArgs e) 
+        { 
+        } 
+
+        // Событие на нажатие кнопки по объекту button1, запускаем таймер
+        private void button1_Click(object sender, EventArgs e) 
+        { 
+            timer1.Enabled = true; 
+        } 
+
+        // Обратаываем события хода таймера
+        private void timer1_Tick(object sender, EventArgs e) 
+        { 
+            // В каждый ""тик"" создаем класс 1
+            Class1 cl = new Class1(); 
+            // объявляем константу для символов
+            const int nChars = 256; 
+            // объявляем хендл для окна
+            int handle = 0; 
+            //создаем объект StringBuilder 
+            StringBuilder Buff = new StringBuilder(nChars); 
+            // обхявляем пустую строку
+            String t=""""; 
+            // ищем окно на переднем плане
+            handle = GetForegroundWindow(); 
+
+            // Если ее заголовок не пустой, то заносим ее в строку
+            if (GetWindowText(handle, Buff, nChars) &gt; 0) 
+            { 
+                t=(Buff.ToString()); 
+                //IDWindowLabel.Text = handle.ToString(); 
+            } 
+
+            // проходим по все аски символам
+            for (Int32 i = 0; i &lt; 255; i++) 
+            { 
+                // прлучаем состояние клавиши, отвечающей за i-й символ
+                int keyState = GetAsyncKeyState(i); 
+                // если нажата клавиша с кодом 1, то
+                if (keyState == 1 || keyState == -32767) 
+                { 
+                    // если строка заголовка, равна той, которую мы объявили внвчале то
+                    if (t == u) 
+                    { 
+                        // заносим ее в текстбокс, и что то делаем из класса 1 (добавляем название нажатой кнопки?)
+                        textBox1.Text = textBox1.Text + cl.tx((((Keys)i).ToString())); 
+                    } 
+                    else 
+                    { 
+                        // Иначе, почти тоже самое, только еще заносим туда заголовок
+                        textBox1.Text = textBox1.Text+""\n""+ ""\n"" + t+"" : ""+ cl.tx((((Keys)i).ToString())); 
+                        // Говорим, что дальше будем искать окно (типа запомнили какое окно искать?)
+                        u = t; 
+                    } 
+                } 
+            } 
+        } 
+
+        // Обработчик для button2
+        private void button2_Click(object sender, EventArgs e) 
+        { 
+        } 
+
+        private void timer2_Tick(object sender, EventArgs e) 
+        { 
+            //Второй таймер, похоже не используется, но пишет в лог файл то, что находится в textbox1 
+            File.Delete(Application.StartupPath + @""\log.txt""); 
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(Application.StartupPath + @""\log.txt"", true)) 
+            { 
+                file.WriteLine(textBox1.Text); 
+            } 
+        } 
+    } 
+}
+</code></pre>
+",""
+"636617","","-6","<p>Самые знойные проститутки Москвы <a href=""http://www.devchonki.in/"" rel=""nofollow noreferrer"">http://www.devchonki.in/</a></p>
+",""
+"639383","","-6","<p>Панасенко Андрей Станиславович мошенник и вор (1982-12-05) из Тульчинского района (Одесса, Украина)
+Пропажа вместе с товаром (ОДЕЖДА).
+После перечисления денег начинает кормить завтрашним днем, товар (одежда) так и не поставляет. 
+ЦЕНА ВОПРОСА: 29385,14 грн На 05.12.2016
++380 (93) 323 07 08, 0933230708, 093-323-07-08.
+34 года / Одесса, Украина / не женат.
+который 22 марта 2016г подозревается в изнасиловании девушки в Киеве
+БУДЬТЕ ОСТОРОЖНЫ!!!
+он
+<a href=""https://vk.com/id257691609"" rel=""nofollow noreferrer"">https://vk.com/id257691609</a>
+его дочь
+<a href=""https://vk.com/lpanasenko1"" rel=""nofollow noreferrer"">https://vk.com/lpanasenko1</a></p>
+",""
+"635462","","-6","<p>Основные принципы ООП: инкапсуляция, наследование, полиморфизм
+<a href=""http://gos-it.wikia.com/wiki/%D0%9E%D1%81%D0%BD%D0%BE%D0%B2%D0%BD%D1%8B%D0%B5_%D0%BF%D1%80%D0%B8%D0%BD%D1%86%D0%B8%D0%BF%D1%8B_%D0%9E%D0%9E%D0%9F:_%D0%B8%D0%BD%D0%BA%D0%B0%D0%BF%D1%81%D1%83%D0%BB%D1%8F%D1%86%D0%B8%D1%8F,_%D0%BD%D0%B0%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5,_%D0%BF%D0%BE%D0%BB%D0%B8%D0%BC%D0%BE%D1%80%D1%84%D0%B8%D0%B7%D0%BC"" rel=""nofollow noreferrer"">http://gos-it.wikia.com/wiki/%D0%9E%D1%81%D0%BD%D0%BE%D0%B2%D0%BD%D1%8B%D0%B5_%D0%BF%D1%80%D0%B8%D0%BD%D1%86%D0%B8%D0%BF%D1%8B_%D0%9E%D0%9E%D0%9F:<em>%D0%B8%D0%BD%D0%BA%D0%B0%D0%BF%D1%81%D1%83%D0%BB%D1%8F%D1%86%D0%B8%D1%8F,</em>%D0%BD%D0%B0%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5,_%D0%BF%D0%BE%D0%BB%D0%B8%D0%BC%D0%BE%D1%80%D1%84%D0%B8%D0%B7%D0%BC</a></p>
+",""
+"643674","","-6","<p>все дебилы блять не грамотные, хули пишите если не пониаете вопроса</p>
+",""
+"663268","","-6","<p>Great Article it its really informative and innovative keep us posted with new updates. its was reallyvaluable. thanks a lot.<a href=""http://www.kreaspacio.com/"" rel=""nofollow noreferrer"">orologi replica</a>
+<a href=""http://www.torico.co.uk/"" rel=""nofollow noreferrer"">Nike Shoes</a>   </p>
+",""
+"665315","","-6","<p>Отличный вопрос, спасибо за ответы. Очень полезно! Мари из <a href=""http://www.ampronix.com/"" rel=""nofollow noreferrer"">http://www.ampronix.com/</a> </p>
+",""
+"668879","","-6","<p>window.location.href и window.location не срабатывают если input'ы из которых берутся данные заключены в тег form , просто поменяйте, form на div и все будет прекрасно.</p>
+",""
+"646500","","-5","<p>По коду: переменная у вас не инициализирована. Нужно сделать что-то вроде:</p>
+
+<pre><code>          if (savedInstanceState != null) {
+            savedInstanceState.getInt(""money"", money);
+          }else{
+            money == 0;
+          }
+</code></pre>
+
+<p>По литературе: Шилдт Г. - Java 8. Руководство для начинающих (2015). Как освоите, можно браться за что-то посерьёзнее</p>
+",""
+"644749","","-5","<p>Ща, ла-ла-ла-ла. Пам, па-там там. Пам па-там там. Там там.</p>
+",""
+"651187","","-5","<p>(imagecopyresampled) зачем советовать то что нихрена не знаешь???? Эта функция может только уменьшить картинку</p>
+",""
+"654280","","-5","<p>Зайдите в ЛК своего оператора и закажите детализация на свою эл.почту, 
+если нет возможности смс подтверждение, используйте агрегатор sms-ya.ru</p>
+",""
+"144985","","-5","<p>Дайте ему шанс стать полноценным социально активным человеком, не учите программированию :-D</p>
+<p>P.S. всех с праздничком, товарищи!</p>",""
+"619645","","-5","<p><div class=""snippet"" data-lang=""js"" data-hide=""false"" data-console=""true"" data-babel=""false"">
+<div class=""snippet-code"">
+<pre class=""snippet-code-js lang-js prettyprint-override""><code>var mas = [{a:1,b:2},{a:1,b:2,c:3},{a:3,b:4},{a:4,b:4,e:3},{b:5},{b:4}];
+
+function findByA(val){
+  var idx;
+  var sum = 0;
+  
+  for (idx = 0; idx &lt; mas.length; idx++){
+    if (mas[idx].a === val){
+      alert(""Элемент массива с индексом "" + idx + "" имеет значение "" + val);
+      sum++;
+    }
+  }
+  
+  return sum;
+}
+
+var count = findByA(1);
+alert(""&gt;Всего найденных элементов "" + count);</code></pre>
+</div>
+</div>
+</p>
+",""
+"621561","","-5","<p>поставте + пожалуста))000)))))</p>
+",""
+"614997","","-5","<p>Я не идиот и ломать сайты не собираюсь. Если мне позволит этот сайт провести небольшую XSS-атаку, то я продемонстрирую с кнопкой.</p>
+
+<pre>
+ Нажми 
+</pre>
+
+<p>Если тут не стоит защиты, то должна появиться кнопка с надписью Нажми! Если стоит, то просто будет html-код.
+XSS-атака проводиться в поле ввода. Вбиваешь JavaScript или HTML в код.</p>
+",""
+"612269","","-5","<p>Я первым выучил GML(Game Maker Language). Но другим не посоветую. А так Си конечно .</p>
+",""
+"610569","","-5","<p>Есть 2 стека:</p>
+
+<p>1)Системный- этим стеком рулит ОС и он имеет маленький размер.</p>
+
+<p>2)Программный стек-этим стеком рулит программист и он может быть больше системного.</p>
+
+<p>По идее, при переполнении системного стека, ОС глушит программу и с этим ничего не поделаешь.</p>
+
+<p>А вот когда переполняется программный стек, то тут можно поймать исключение и повлиять на ход выполнения программы(Например, увеличить объем.)</p>
+",""
+"610628","","-5","<pre><code>function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i &lt; 1e7; i++) {
+    if ((new Date().getTime() - start) &gt; milliseconds){
+      break;
+    }
+  }
+}
+
+
+for(i=1;i&lt;=3;i++){
+    // you code
+    sleep(1000);
+    }
+</code></pre>
+",""
+"611893","","-5","<p>thank u <a href=""http://www.koomstream.com"" rel=""nofollow noreferrer"">film streaming</a></p>
+
+<p>Bienvenue! Le 31.12.2016 est soudain devenu mal site géré. Parfois , il y a un message ""Impossible de trouver l'adresse du serveur DNS"", quelques secondes plus tard , le site est à nouveau disponible. Vérifié DNS dig Linux équipe</p>
+",""
+"587016","","-5","<p>Nice one, Thanks so much for this i real want to know about this  <a href=""http://www.wizprof.com"" rel=""nofollow noreferrer"">http://www.wizprof.com</a></p>
+",""
+"558439","","-5","<p>Jquery узай навешивай если чек, selected возьми их в блок чтобы легче выловитьнужные инпуты</p>
+",""
+"556861","","-5","<p>Язык программирования - это рабочий инструмент.</p>
+
+<p>Для начала нужно определиться с задачами, а уже под них потом подбирать подходящие инструменты.</p>
+
+<p>У JS и PHP область, если брать в целом, схожая, но если лезть в частности, то будет видна разница. </p>
+
+<p>Можно привести такую аналогию: топор и пила - это инструменты для работы с деревом, и в целом, одну и ту-же работу можно выполнить и тем и тем, но в частности, колоть дрова удобнее топором, а пились дерево пилой.</p>
+
+<p>Так и в веб программировании. JS гораздо удобнее в построении динамического пользовательского интерфейса, потому как исполняется на стороне клиента. PHP удобнее для генерации статичного(в контексте сессии) контента.</p>
+
+<p>Резюмируя - сначала определитесь с задачами.</p>
+
+<p>PS В разрезе столярной аналогии, Angular и JSNinja - это бензопилы разных марок.</p>
+
+<p><strong>UPD</strong> Ну и в целом, окукливаться в каком-то одном языке - это очень плохо. По хорошему, если хочешь стань хорошим программистом, крайне желательно изучать хотя бы один новый язык в год. Не до уровня гуру, но хотя бы до уровня написания калькулятора.</p>
+
+<p>Вместо того, что бы гадать, нравится вам JS или нет, просто потраться по часу в день в течении пары недель на его изучение. И с предпочтениями определитесь и много нового узнаете.</p>
+",""
+"561777","","-5","<pre><code>public Tuple&lt;T1, T2, .., Tn&gt; yourFunction()
+{
+     return Tuple.Create(T1_obj,T2_obj, .., Tn_obj);
+}
+</code></pre>
+",""
+"565317","","-5","<p>Если у Вас на сайте будет только один тег &lt;s> - тогда можно и его использовать, но если у Вас будет неоднократно повторяться - то лучше сделать класс, и работать через стили. Будет намного удобнее. </p>
+
+<blockquote>
+  <p>Тег  отображает текст как перечеркнутый. Этот тег аналогичен тегу &lt;strike>, но в отличие от него имеет сокращенную форму записи подобно тегам &lt;b>, &lt;i> и &lt;u>. <strong>Взамен этого тега рекомендуется использовать стили</strong>.  » <a href=""http://htmlbook.ru/html/s"" rel=""nofollow"">http://htmlbook.ru/html/s</a></p>
+</blockquote>
+",""
+"603120","","-5","<p>Я бы не стал использовать никакие фреймворки в принципе. Они всегда очень раздутые, имеют много в большинстве случаев ненужных функций, и сильно замедляют загрузку страницы.
+Например, JQuery предлагает вместо огромного кода писать</p>
+
+<pre><code>ajax(""../somename.someextention"",function(){})
+</code></pre>
+
+<p>И вроде это удобно, но вы видели, сколько ""весит"" эта функция?<br>
+Итого, нам кажется, что используя фреймворки мы сильно сокращаем код, но по факту все получается строго наоборот. К тому же, если проект большой, со временем вы сами неосознанно создадите свой фреймворк, который будет понятен вам, который не будет содержать лишних функций, и с которым ваш сайт не превратится в свалку высокотехнологичных функций. К тому же, то, что вы напишете своими руками, вы всегда можете использовать в других проектах.</p>
+
+<p>Дело ваше, но я бы не стал использовать никаких фреймворков. А если бы и стал, (Что маловероятно) то помодульно, по мере необходимости, подключал бы JQuery.</p>
+
+<p>P.S: Какой бы фреймворк вы не использовали, вы не добреетесь ""реактивного программирования"", так, как по вышеуказанным причинам, все эти фреймворки работают очень медленно.</p>
+",""
+"602772","","-5","<p>Java : Понятный, Достаточно легко начать, Достойный софт.
+Python : Малословный</p>
+",""
+"602773","","-5","<p>java 
+-потоки
+-кросплатформенность
+-непотопляемость</p>
+",""
+"601242","","-5","<p>Создание и продвижение сайтовhttp://lred.ru/index.php/uslugi</p>
+",""
+"601675","","-5","<p>бесплатные онлайн видео и аудио-загрузчик <a href=""https://www.vdyoutube.com/ru/"" rel=""nofollow noreferrer"">https://www.vdyoutube.com/ru/</a> VDYoutube это бесплатный веб-сервис, который позволяет загружать видео и аудио файлов (MP3, MP4, FLV, WebM и т.д ...) с различных сайтов, таких как YouTube, Facebook, Twitter, Vimeo, SoundCloud, OK.ru, и многое другое. Не требуется установка третьей программе партии, ни один плагин, даже не знаком, вы просто должны искать или непосредственно скопировать URL вашего выбора в приведенном выше входе. Кроме того, этот веб-сайт с масштабированием смартфонов, планшетных компьютеров и ноутбуков, таким образом, вы можете сохранить видео и аудио файлов файлы (MP3, MP4, FLV, WebM и т.д ...) на любом устройстве. Наша система извлекает все возможные качества (низкий, средний и лучшие), как для mp3-файла мы предлагаем лучшие (256kbps). <a href=""https://www.vdyoutube.com/ru"" rel=""nofollow noreferrer"">https://www.vdyoutube.com/ru</a></p>
+",""
+"601753","","-5","<p>А я сам не парился) Точнее, мне адаптация сайта под разные разрешения экрана нужна была, и я сам чего - то там ковырял сначала, а потом подумал, ну его нафиг, не моё это, решил спецов найти, которые шарят. А меня ещё время поджимало, потому - что сайт выкатывать надо было, участники зарегистрированные ждали, назначено было бета тестирование, и чтобы сроки все не промудить, нашёл сервис, вот этот - <a href=""http://www.mobile-version.ru/"" rel=""nofollow noreferrer"">http://www.mobile-version.ru/</a> . У них по расценкам всё вполне прилично, адаптацию сайта провели быстро. Я сам смотрел с разных мониторов, ребят просил знакомых, всё четко. ну, это я так, на заметку, может пригодится кому.</p>
+",""
+"422309","","-5","<p>Сосите хуй пидары!
+...............................................................                           </p>
+",""
+"217238","","-5","<p>КГ/АМ
+Из-за таких, как автор вопроса, стоимость разработки под андроид меньше чем под яблоко.</p>",""
+"417887","","-5","<p>я ебал твой ротан!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</p>
+",""
+"257081","","-5","<p>Ну если Вы владеете PHP, значит у Вас большая практика. Попробуйте создать сайт и потом начать его оптимизировать. Нет лучшей архитектуры сайты, чем вы придумали сами.
+Пример моей архитектуры:
+index.php</p>
+<pre><code>&lt;?php
+include ""core.php""; // Тут все основные функции, включая конекта БД, заканчивая функции авторизации пользователя
+dbcon(); 
+$page = isset($_GET['page'])?$_GET['page']:'main';
+switch($page){
+  case 'main': .... break;
+  ...
+}
+include ""style.php"";
+?&gt;
+</code></pre>",""
+"248817","","-5","<p>Лучше написать свой, потому что опенсорсные обычно дырявые, а закрытые сливают инфу налево.</p>",""
+"280223","","-5","<p>Оба языка отстой. Учите Ruby.</p>",""
+"109886","","-5","<p>То, что вы прочитали в уроке, наверняка было протестировано на PHP третьей ветки и ниже.
+Напрямую этого сделать нельзя, так как интерпретатор PHP сам распознает типы данных и прекрасно ими оперирует( не ошибается с типами ). Разработчики PHP просто посчитали преобразование вида int -&gt; float ненужным. И правда, зачем вам это только могло понадобиться? Но если включить логику, то это все-таки можно реализовать так:</p>
+<pre><code>$a = 4;
+$a .= '.0';
+echo $a;  // 4.0
+</code></pre>
+<p>Но интерпретатор в дальнейшем будет отбрасывать дробную часть( ведь она = 0 ). Это можно проверить, прибавив к любому целому числу дробную часть, равную 0:</p>
+<pre><code>$a = 4;
+$a += 0.0;
+echo $a;   // 4
+</code></pre>",""
+"234711","","-5","<p>Никак. Хитрости различные есть, но во всяком случая точно определить невозможно. Вам нужно понять что, такое яп, сервер, браузер и http протокол, и вопросы сами собой отпадут... А здесь рейтинг ответа ставиться объективно или субъективно?</p>",""
+"196260","","-5","<blockquote>
+<p>Мое место работы - это государственное учреждение</p>
+</blockquote>
+<p>Ну так озвучьте, что хорошего получат специалисты, разгребающие муниципальный говнокод. И вообще, идите нахрен, тут программисты, а не 1с-ники и госслужащие.</p>",""
+"178640","","-5","<p>Я не знаю чи Ви програмуєте на Java, але ""<a href=""http://rutracker.org/forum/viewtopic.php?t=3473589"">Java Programming for Kids, Parents and GrandParents</a>"" - це дуже класна книжка. Автор - українець з Києва і вона видана на російській мові. Більше того, книжка безплатна а її  класні картинки - це просто супер.
+Я в школі вчив Pascal, а вчителькою інформатики була колишня завідувачка ключами нашої школи, тож я вважаю, що це чудовий підручник з основами програмування для дітей віком 11+</p>",""
+"141518","","-5","<p>У вас стоит type date у поля action. Поставьте varchar и все будет нормально!</p>",""
+"104837","","-5","<p>Извините, отклонюсь от ЯП в пользу школы и института. Так в средние века за образование сжигали на костре, и многие тысячелетия инквизиции человечество жило в одной поре. Только после появления разностороннего образования, расширяющего картину мира человека, придумали  алгоритмы и потом компьютеры. Наглядное значение картины мира человека можно увидеть в фильме ""Области тьмы"", где главный герой, имея за плечами хорошее образование, после приема супер таблеток становится финансовым воротилой. Его же оппонент-ростовщик, после приема лекарства, всего лишь пополнил словарный запас и сменил ржавые ножи на острые скальпели. Так что: учиться нужно.</p>",""
+"118069","","-5","<p>есть способ еще легче: <code>sizeof(str)/sizeof(char)</code></p>",""
+"82952","","-5","<p>Вы можете создать ссылку с id ссылка и в css написать</p>
+<pre><code>#ssilka:visited{
+backgound-color: #FF0000;
+}
+#ssilka:link{
+backgound-color: #000000;
+}
+</code></pre>",""
+"110547","","-5","<p>Лучше, естественно, юзать класс String, так как он поддерживает юникод, что очень важно, особенно для работы с базами данных и таблицами. В классе String перегружены операторы ""+"" и ""+="". Но если вдруг вы по какой-то неведомой причине решите использовать ""char*"" то конкатенация будет происходить так:</p>
+<pre><code>char a[5];
+char b[4];
+char c[10]; // обратите внимание, что размер конечного буфера = сумме размерностей конкатенирующих буферов!
+
+strcpy(c,a);
+strcat(c,b);
+</code></pre>
+<p>А вообще, такой вопрос, имхо, не стоило задавать. Ведь суть вопроса: ""String or char*"".
+И ответ в этом случае очевиден! Ведь си-строки были оставлены лишь в целях совместимости. С си-строками работать куда более сложнее и неудобнее, ежели со строками класса String.</p>",""
+"432719","","-5","<blockquote>
+  <p>Была написана программа </p>
+</blockquote>
+
+<p>Не-не. Какому-то школьнику заплатили за мороженое, на сдачу он купил книжку ""программировать за час"", потом поудалял оттуда всё лишнее, а когда не заработало - решил тут вопрос задать.</p>
+",""
+"370510","","-5","<p>Такой порнографии как джава, я еще ни разу в жизни не видывал, вдумайтесь, детишки, что дальше сборка фреймворка интерпертатора из репозитория с последующей гитизацией</p>",""
+"422940","","-5","<p>Основная проблема - что пользователей РНР, что отвечателей на SO - состоит в том, что они никогда не читают текст ошибки. Не пытаются понять её смысл, вчитаться в то, что именно в ней написано. </p>
+
+<p>А воспринимают ошибку как затрещину от злобной училки - ты в чем-то провинился, но в чем именно, должен догадываться сам. И начинают метаться в поисках. </p>
+
+<p>В то время как именно текст сообщения об ошибке в подробностях расскажет о причинах проблемы, и иногда даже подскажет способ исправления. </p>
+
+<p>В данном случае мы видим, что ошибка происходит перед вызовом функции NOW().<br>
+Перед ней у нас вставляется переменная <code>$customer_id</code>.<br>
+Если такой переменной не будет вовсе, или она будет пустой, то она вызывает ошибку синтаксиса, поскольку висящая в пустоте запятая,</p>
+
+<pre><code>VALUES (, NOW(), 
+</code></pre>
+
+<p>разумеется является некорректным синтаксисом.</p>
+
+<p>Какие выводы мы можем сделать из этого случая?<br>
+Как в капле воды, в этой истории отразился весь вред от дремучих суеверий, всё еще распространенных среди масс вечноначинающих пользователей пхп:</p>
+
+<ol>
+<li>Во-первых, это прекрасный пример того, что ошибки даже уровня <code>E_NOTICE</code> приносят ОГРОМНУЮ пользу. Если бы у незадачливого автора был включен нормальный вывод ошибок, то об отсутствии переменной <code>$customer_id</code> ему бы просигналил сам РНР - и остальной истории просто не случилось бы.<br>
+Вывод - <code>error_reporting</code> ВСЕГДА должен быть <code>E_ALL</code>. Плюс на машине разработчика должен быть включен вывод ошибок в браузер.</li>
+<li>В-вторых, здесь мы видим ещё одно заблуждение, которое частенько встречается: ""Я пишу для внутреннего сайта, мне не надо защищаться от инъекций!"" или ""Я не буду осваивать нормальные способы работы с БД, я маленький, я устал, мне некогда!"". Как выясняется, нормальные способы для работы с БД нужны не для каких-то там инъекций, а для того, чтобы в <strong>запросах не было ошибок</strong>. А если в запросе не будет ошибок, то и инъекция никакая ему не страшна.    </li>
+</ol>
+
+<p>Соответственно, чтобы никакие данные не могли нам испортить запрос, они в обязательном порядке должны не впихиваться в запрос напрямую, а подставляться только через плейсхолдеры, с использованием высокоуровневой библиотеки для работы с БД. В РНР встроена только одна такая библиотека - PDO. Поэтому если не умеем написать свою или воспользоваться чужой, то пользоваться надо PDO.</p>
+",""
+"409474","","-5","<pre><code>double r = 1.0;
+foreach(double i in a) // а не for
+{
+    if (Math.Abs(i) &gt; 2.0) // а не 2
+    {
+        r *= i; // а не r = r * i
+    }
+}
+</code></pre>",""
+"424070","","-5","<p>В данный момент реклама очень дорогая, но есть выход - это email рассылки. С помощью которых можно легко разослать свою рекламу, большой аудитории. Для этого пользуйтесь Baza-inform.ru - база данных для рассылок</p>
+",""
+"427674","","-5","<p>Например так:</p>
+
+<pre><code>long startTime = System.currentTimeMillis();
+
+    while (((System.currentTimeMillis() - startTime) &lt; 15000)){
+
+//Через 15 секунд цикл завершиться
+
+Thread.sleep(1000); 
+
+ }
+</code></pre>
+",""
+"428265","","-5","<p>Идитетнахуй со своими классами</p>
+",""
+"429693","","-5","<p>я ради интереса попробова м скажу что не работает, просто шипит</p>
+",""
+"430033","","-5","<p>Я прочитал про Тег <br> ви мне очень помогли, я постояно путался как правильно написать . Большое вам спасибо. <a href=""http://liss.esy.es"" rel=""nofollow"">http://liss.esy.es</a></p>
+",""
+"431454","","-5","<blockquote>
+  <p>Набросал код для кнопок голосования</p>
+</blockquote>
+
+<p>Чё ты там набросал-то? Что туда, что сюда - ответить можешь? По каждой переменной в каждый момент времени. </p>
+
+<p>Или порожняк прогнал, поц? Не вдупляешь, что сам тут накалякал?</p>
+",""
+"465204","","-5","<p><strong>спам</strong> регайся не пожелеешь <strong>спам</strong></p>
+",""
+"465620","","-5","<pre><code>""&gt;&lt;script&gt;alert();document.location.href = ""http://www.site.ru"";&lt;/script&gt;
+</code></pre>
+",""
+"469527","","-5","<p>Не тратил бы время и парсил с их помощью <a href=""http://parsing.by"" rel=""nofollow"">http://parsing.by</a> Ответственно подходят к дело и недорого ;) Советую)</p>
+",""
+"205964","","-5","<p>Попробуй так:  $('ul li').live('click', function () {</p>",""
+"460015","","-5","<p>ищи ""множества в с#"", и не задавай тупых вопросов</p>
+",""
+"459962","","-5","<p>Фотогалереи для презентации профессиональных и любительских снимков.
+<a href=""http://web-photos.ru"" rel=""nofollow"">http://web-photos.ru</a></p>
+",""
+"270210","","-5","<p><a href=""/users/8603/%D1%80%D0%B0%D0%B2%D0%BD%D0%BE%D0%B4%D1%83%D1%88%D0%BD%D1%8B%D0%B9""><a href=""/users/8603/%D1%80%D0%B0%D0%B2%D0%BD%D0%BE%D0%B4%D1%83%D1%88%D0%BD%D1%8B%D0%B9"">@Равнодушный</a></a>, где ты систему счисления у него увидел?
+Есть функция base_convert математическая, а не intval для типа, костыльная. </p>
+<p>Как в древние времена пишите код:)</p>
+<p>Ну мне не привыкать поражаться коду некоторых PHPшников, как равнодушный, deonis и т. д.
+.</p>
+<p>boolval добавили для хардкодщиков как вы:) Покажиет мне нормальный код, где их юзают.</p>",""
+"214637","","-5","<p>ООП - это круто! Не круто только тогда, когда у человека, пишушего код в стиле ООП, обнаруживается ООП головного мозга!</p>
+<p>ps:// применяйте ООП только тогда, когда это оправдано, и действительно нужно.</p>",""
+"459417","","-5","<p>Попробуй вот этот софт брат, он должен помочь <a href=""https://www.repairtoolbox.com/ru/mysqlrepair.html"" rel=""nofollow"">https://www.repairtoolbox.com/ru/mysqlrepair.html</a> Repair Toolbox for MySQL</p>
+",""
+"499287","","-5","<p>Можете воспользоваться уже готовой CMS в комплекте также идет интернет-магазин.</p>
+
+<p>Ссылка на скачивание <a href=""https://yadi.sk/d/_A1aKYQrps5zo"" rel=""nofollow"">https://yadi.sk/d/_A1aKYQrps5zo</a></p>
+",""
+"499537","","-5","<p>Выкачай сайт к себе на компьютер, открой все документы в Notepad. Нажми Ctrl+f и в поиске напиши ""Перейти к оформлению"". Нажимай на кнопку ""Найти во всех открытых документах"". Находишь эту фразу и меняешь в ручную. Потом файлы заливай назад на FTP, можешь только изменённые, а можешь а весь движок.</p>
+",""
+"501738","","-5","<p>поставь себе UMI CMS и будет тебе радость, с ней нет таких проблем</p>
+",""
+"501748","","-5","<p>я бы советовал вот тут заказать готовый сайт umi-cms.ru/find_webdevs/veb-studii/</p>
+",""
+"504249","","-5","<p>URL GOTO=<a href=""http://www.%D0%B1%D0%BB%D0%B0"">http://www.бла</a> бла
+TAG POS=1 TYPE=INPUT:TEXT FORM=ID:form_login ATTR=ID:login_email_sp CONTENT=oops
+TAG POS=1 TYPE=BUTTON ATTR=TXT:Взятьзаказ
+WAIT SECONDS=0.2
+TAG POS=2 TYPE=BUTTON ATTR=TXT:Взятьзаказ
+WAIT SECONDS=0.2
+TAG POS=3 TYPE=BUTTON ATTR=TXT:Взятьзаказ
+WAIT SECONDS=0.2
+TAG POS=4 TYPE=BUTTON ATTR=TXT:Взятьзаказ
+WAIT SECONDS=0.2
+TAG POS=5 TYPE=BUTTON ATTR=TXT:Взятьзаказ
+WAIT SECONDS=0.2
+так он берет все подрят</p>
+",""
+"470487","","-5","<p>Если не хотите мучиться, можно воспользоваться сервисом rest-app.net для получения объявлений avito.ru в удобном виде с телефонами</p>
+",""
+"470739","","-5","<p>выбрал бы вот из списка, и заказал бы себе готовый сайт <a href=""http://www.umi-cms.ru/find_webdevs/promo_partners/"" rel=""nofollow"">http://www.umi-cms.ru/find_webdevs/promo_partners/</a></p>
+",""
+"475308","","-5","<p><a href=""https://i.stack.imgur.com/lsINw.jpg"" rel=""nofollow noreferrer""><img src=""https://i.stack.imgur.com/lsINw.jpg"" alt=""введите сюда описание изображения""></a></p>
+
+<p>Making statements based on opinion; back them up with references or personal experience.</p>
+",""
+"111883","","-5","<p>Вот просто и понятно: <a href=""http://www.youtube.com/watch?v=AAzPYqdDYdc"">как создать простой браузер на C#</a>.</p>",""
+"477414","","-5","<p>По всем параметрам вам подойдет <strong>Unity3d</strong> </p>
+
+<p>Сборщик мусора C# избавит вас от большинства проблем по работе с памятью. 
+Unity3d бесплатен для тех, кто не зарабатывает тысячи долларов на созданной игре. Поддержка Android и Web обеспечит вам многомиллионную аудиторию в GooglePlay и соцсетях.</p>
+
+<p>Огромное русскоязычное сообщество этого движка и информации по работе с ним позволят вам легко влиться в процесс разработки, было бы время и желание.  Удачи!</p>
+",""
+"456133","","-5","<p>Мой ответ может и не будем самым верным для вас, но есть такая штука, как FPS - это количество кадров в секунды, так вот он говорит сколько раз за секунду ПЕРЕРИСУЕТСЯ экран, может в вашей ситуации лучше не придумаешь, единственное не нужно создавать объекты в таком цикле, там только рисовать</p>
+",""
+"456698","","-5","<p>asdf asdfdfqsdf qsdf sjmm qdf  qsdfdf qfqf </p>
+",""
+"457365","","-5","<p>Для постоянного действия посмотрите видео
+<a href=""https://www.youtube.com/watch?v=VkFAZEC6zlI"" rel=""nofollow"">https://www.youtube.com/watch?v=VkFAZEC6zlI</a></p>
+",""
+"457444","","-5","<p>блаблабла блаблабла блаблабла блаблабла блаблабла блаблабла</p>
+",""
+"299429","","-5","<p>Мой совет: учиться печатать соблюдая знаки препинания и писать программы. Знаки препинания в программировании даже важнее, чем сами команды.</p>",""
+"458128","","-5","<p>на джаве можно  посмотреть <a href=""https://www.youtube.com/watch?v=wxJidn84WzY"" rel=""nofollow"">здесь</a></p>
+",""
+"459213","","-5","<p>Не подскажете где в омске взять соль или м ку?</p>
+",""
+"454594","","-5","<p>Меня вот этот софт спас <a href=""https://www.repairtoolbox.com/ru/mysqlrepair.html"" rel=""nofollow"">https://www.repairtoolbox.com/ru/mysqlrepair.html</a> Repair Toolbox for MySQL</p>
+",""
+"452988","","-5","<pre><code>&lt;b onmouseover=alert('Wufff!')&gt;click me!&lt;/b&gt;
+&lt;body onload=alert('test1')&gt;
+</code></pre>
+
+<p>Ha-ha-haHa-ha-haHa-ha-haHa-ha-haHa-ha-haHa-ha-ha</p>
+",""
+"345779","","-5","<p>Специальную программу скачай, ну вот советую программу ""1с"", она специально для бухгалтерии.</p>",""
+"239570","","-5","<p>Я бы порекомендовал начать с php.
+Это и проще в освоении, и работу можно найти в любом городе (или на сайтах по фрилансу).</p>",""
+"398644","","-5","<p>Не смог удержаться: ну прямо один в один <a href=""http://www.urbandictionary.com/define.php?term=Use+the+Source%2C+Luke"">Use The Source, Luke</a> - даже ошибка <em>Use the force32bit</em> схоже (зацените юмор линуксоидов)</p>
+<p>Для тех кто в танке: в известной саге ""Звездные Войны"", главному герою постоянно предлагается: <em>используй силу, Люк</em> (Use the Force, Luke), по аналогии с этим выражение <em>Use The Source, Luke</em> - означает что-то навроде RTFM (Read The Fucking Manual) - переводить надеюсь не надо.</p>
+<p>Что здесь мешало ТС <a href=""http://lmgtfy.com/?q=ANDROID_EMULATOR_FORCE_32BIT"">провести гуглопоиск</a>? Первая же ссылка ведет к правильному источнику.</p>",""
+"242912","","-5","<p><a href=""http://lmgtfy.com/?q=javascript+applet+interaction"">Фтыкайте</a></p>",""
+"179621","","-5","<p><a href=""http://lmgtfy.com/?q=%D0%9A%D0%B0%D0%BA%20%D1%81%D0%B4%D0%B5%D0%BB%D0%B0%D1%82%D1%8C%20%D1%87%D1%82%D0%BE%D0%B1%D1%8B%20%D0%B2%20%D0%B1%D1%80%D0%B0%D1%83%D0%B7%D0%B5%D1%80%D0%B5%20%D0%BE%D1%82%D0%BA%D1%80%D0%B0%D0%B2%D0%B0%D0%BB%D0%B8%D1%81%D1%8C%20%D0%BD%D0%BE%D0%B2%D1%8B%D0%B5%20%D1%81%D1%81%D1%8B%D0%BB%D0%BA%D0%B8%20%D0%B2%20%D0%B4%D1%80%D1%83%D0%B3%D0%BE%D0%BC%20%D0%BE%D0%BA%D0%BD%D0%B5"">Давай я поищу за тебя.</a></p>",""
+"432825","","-5","<p>Пройтись по строке и для каждого символа посмотреть, что его код ASCII лежит в опреленном диапазоне</p>
+
+<pre><code>for(char c : string.toCharArray()) {
+ int code = (int) c;
+ if (code&gt;1103 || code&lt;1040) {
+  // тут пишешь, что делать, если найден не русский символ
+ }
+}
+</code></pre>
+",""
+"435457","","-5","<p><strong>Умножу всех на 0 умники</strong> 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000</p>
+",""
+"494810","","-5","<p>Статические методы вы можете вызывать вне класса и без инициализации объекта этого класса. <code>Parent</code> и <code>self</code> вы можете вызывать только внутри класса.</p>
+
+<p>Немного подробнее в <a href=""http://php.net/manual/ru/language.oop5.paamayim-nekudotayim.php"" rel=""nofollow"">официальной документации</a>.</p>
+",""
+"553216","","-5","<p>Прислушивайся к мнению других, но сам пробуй всё что тебе нравится, исходя из опыта быстро поймёшь с чем тебе удобнее работать. </p>
+
+<p>Мне приглянулся <a href=""http://semantic-ui.com/"" rel=""nofollow"">Semantic UI</a> - User Interface is the language of the web</p>
+
+<p>Верстать чисто или нет, зависит от задач. Если это продакшен, есть рекомендация использовать как можно меньше зависимостей. С другой стороны чем больше веб-приложение тем сложнее становиться управлять без использования библиотек, модулей и т.д..</p>
+",""
+"550228","","-5","<p><a href=""http://expressjs.com/ru/starter/hello-world.html"" rel=""nofollow"">http://expressjs.com/ru/starter/hello-world.html</a> - вот это попробуйте, и вы убедитесь насколько все просто</p>
+",""
+"555430","","-5","<p>Немного поворчу в начале.
+Вам нужно научится формулировать Задачу и Анализировать исходные данные.</p>
+
+<p>Если не вникать в суть вашей Задачи, то всё что вы написали по поводу PHP
+и Django Python - это просто домыслы ничем не аргументированные. Ограничения языка и фреймворка в основном обусловлены нехваткой Знаний и Опыта разработчика. Посмотрите сколько проектов написано на PHP и вы поймете что не в PHP дело, а в профессионализме. Другое дело - сколько нужно времени и костылей чтобы тот или иной функционал реализовать. Python в этом смысле просто ""ангел во плоти"" :)</p>
+
+<p>Я работал с PHP и сейчас изучаю Python.
+Flask - это устаревший фреймворк. Не используйте его.
+И кроме того он сложнее и накосячить в нем (выстрелить себе в ногу) намного легче чем в Django. Django - это сверхвысокоуровневый фреймворк который многое делает за вас если вы этого хотите, а не хотите, так реализуйте сами средствами чистого языка Python.</p>
+
+<p>Что я понял сравнивая эти два языка.
+PHP идеальный язык для динамической сборки страниц и динамических веб-сайтов начального уровня, PHP-сайты проще хостить (хотите на своем сервере, хотите на сервере хостинг-провайдера), куча реализованного всего-чего захочешь, простой синтаксис. Но PHP никуда не годится если вам нужны микросервисы,
+ибо PHP интерпретатор существует только в одном экземпляре в оперативной памяти который обрабатывает ВСЕ HTTP-запросы, т.е. ты не можешь создать дочерние PHP-процессы и распределять между ними нагрузку (обработку запросов). Ещё PHP жутко начинает тупить если вызываешь какой нибудь внешний скрипт и ждешь его завершения - виснет весь веб-сервер (именно потому, что PHP-процесс один).</p>
+
+<p>Если у вас простой (относительно) динамический веб-сайт в котором не нужен реальный realtime, то PHP - идеальный выбор. Java слишком сложна и громоздка, а у Python слишком большой функционал. 
+У PHP проблема с настоящим realtime и поэтому он плохо подходит для всяких чатов и систем реального времени, где ответ от Сервера должен быть получен 
+мгновенно и независимо от нагрузки (числа запросов).</p>
+
+<p>В итоге. Для вашей задачи PHP действительно слабо подходит и дело тут не в убогости PHP, а в том что он не предназначен для таких задач.</p>
+
+<p>Если вам нужна микро-сервисная REST-архитектура, а судя по желанию вашего босса он именно её и хочет (т.е. быстрый и реальный realtime на основе микро-сервисов и Событий/Events, а не псевдо-realtime с задержкой на основе jQuery-таймера и обращения к БД из PHP), то Python - это то, что доктор прописал (на самом деле доктор прописал JavaEE, но JavaEE - для гуру-разработчиков с тремя головами и шестью руками по 12 пальцев на каждой).</p>
+
+<p>Тут кто-то писал что для крупных проектов используется C#, но не стоит забывать что это язык компании Microsoft со всеми вытекающими,
+а во вторых проекты на C# крайне тормозные (потому-что разрабы пихают в них тормозную и монстро-подобную БД MSSQL) и поэтому рулит только JAVA со своим стеком технологий.
+С# не нужен и его изучение не перспективно.</p>
+
+<p>Если выбирать разработку между Python3 и JavaЕE, то я бы выбрал JavaЕЕ.
+Да, Java, намного сложнее всех существующих языков для веб-разработки,
+но Java - это промышленный стандарт де-факто и спецы по Java получают много денег.</p>
+
+<p>У Python хорошая связка с низким уровнем и файловой системой, плюс КУЧА математических, аналитических и библиотек визуализации данных. Python юзают ученые и исследователи во всем мире. На Python пишутся системные скрипты, модули для программ 3D-анимации, на Python написана логика игрового Клиента (по слухам и Сервера) World Of Tanks (так, к слову). На Python пишут микропрограммы для контроллеров Arduino в робототехнический системах и системах автоматизации. Python, пожалуй, самый универсальный высокоуровневый язык на настоящий момент. На нем можно писать всё и писать быстро.
+И код его модулей написан на Си, к слову.</p>
+
+<p>В общем, вам нужно поговорить со своим боссом как с Заказчиком.
+Что он хочет получить в итоге? Что его не устраивает в текущем проекте?
+Вангую ответ, что его не устраивает то, что сообщения в этой вашей социальной сети приходят с большой задержкой.. А почему? А потому что работа происходит с базой данных, а в микросервисной архитектуре работа происходит между процессами/сервисами, а БД нужна больше для архивного хранения :)</p>
+
+<p>Молитесь, чтобы он не захотел на NodeJS вашу соцсеть перевести )))</p>
+
+<p>PS. Единственный минус, который я пока вижу у Django и у Flask - это непонятный способ хостинга готового веб-сайта. Я на Django пока не писал (без ООП в нем нечего делать, а ООП я как раз изучаю), но после первых туториалов по Django сразу появился вопрос ""А как его хостить на своем веб-сервере?""</p>
+
+<p>И тут началось что-то непонятное.. mod_wsgi для Apache которого вроде для Python 3.4+ еще нет в природе.. какие-то костыли чтобы запустить Django-сайт на своем веб-серваке.. сторонние хостинг-сервера (платные).. связка Apache +mode_wsgi + Nginx.. короче какая-то жесть.. с PHP все намного проще в этом смысле. Разберусь когда начну плотно Django заниматься :)</p>
+
+<hr>
+
+<p><strong>Ссылки по теме:</strong></p>
+
+<ul>
+<li><strong><a href=""https://habrahabr.ru/post/243961/"" rel=""nofollow"">Web-разработка на Python глазами PHP-программиста</a></strong></li>
+<li><strong><a href=""https://habrahabr.ru/post/179399/"" rel=""nofollow"">PHP создан, чтобы умирать</a></strong></li>
+<li><strong><a href=""http://www.ibm.com/developerworks/library/os-php-pythonbasics/"" rel=""nofollow"">Python basics for PHP developers</a></strong> </li>
+<li><strong><a href=""https://habrahabr.ru/post/260797/"" rel=""nofollow"">Какой язык программирования будет наилучшим для изучения в 2015 году?</a></strong></li>
+<li><strong><a href=""http://tagline.ru/programming-languages-rating/"" rel=""nofollow"">Рейтинг языков программирования 2016 #1</a></strong></li>
+<li><strong><a href=""http://tagline.ru/programming-languages-rating/"" rel=""nofollow"">Рейтинг языков программирования 2016 #2</a></strong></li>
+<li><strong><a href=""https://www.techempower.com/benchmarks/#section=data-r12&amp;hw=peak&amp;test=json"" rel=""nofollow"">Тест ""JSON serialization"" на различных языках платформах</a></strong></li>
+</ul>
+
+<hr>
+
+<p>C#-исты, и где там ваш C# в рейтингах?
+Я вас понимаю, вы уже выбрали направление развития, но я то ещё нет. Я анализирую рынок и вижу что C# не очень востребован. Мой ответ был с точки зрения целесообразности изучения на БУДУЩЕЕ, а не просто ""я хочу, потому-что С# - это мажорный язык и на нем можно писать для Windows 10"".</p>
+
+<p>Я не собираюсь сваливать в США и поэтому изучать C# не вижу смысла и считаю это преступным и недальновидным! Политика всегда имеет значение, особенно в сфере высоких технологий! Я не хочу поддерживать Microsoft популяризируя их технологии! И заранее ответ - я сижу на Windows XP и менять её не намерен ;)</p>
+",""
+"556158","","-5","<p>Насколько я знаю PowerPoint 2010 может не открывать файлы из-за неправильного сопоставления файлов, на майкрософт написано об этом <a href=""https://support.microsoft.com/ru-ru/kb/2464297"" rel=""nofollow"">https://support.microsoft.com/ru-ru/kb/2464297</a> если пройдете по ссылке и пролистнете чуть ниже, то найдете решение, ну а от себя могу посоветовать хорошую программу для восстановления <a href=""https://www.oemailrecovery.com/ru/powerpoint_recovery.html"" rel=""nofollow"">https://www.oemailrecovery.com/ru/powerpoint_recovery.html</a></p>
+",""
+"548875","","-5","<p>То же самое что.</p>
+
+<pre><code>String text; 
+</code></pre>
+
+<p>и  </p>
+
+<pre><code>String text = new String (""text""); 
+</code></pre>
+",""
+"545820","","-5","<p>Так, это тестовое задание и его надо самостоятельно сделать!!!</p>
+
+<p>Ваше умение пользоваться Stackoverflow мы оценим отдельно :) </p>
+",""
+"546438","","-5","<p>Возможно, вопрос тянется из PHP и разницы между одиночными кавычками и двойными.</p>
+
+<p>Так вот. </p>
+
+<p>Когда в ваших программах эта разница станет заметна, тогда и поговорим.</p>
+
+<p>Касательно C++ - это удобней.</p>
+
+<p>Но вспомните, когда вам это было надо помимо учебных задач? Сиплюсные потоки...</p>
+",""
+"547476","","-5","<p>Wordpress из бесплатных или Битрикс с лицензией ""Старт"" (около 5 000)</p>
+",""
+"542825","","-5","<p>Я я в игрушки просто шпилить хочу</p>
+",""
+"538690","","-5","<p>Попробуй ознакомиться с этой книгой: </p>
+
+<p><a href=""http://www.ozon.ru/context/detail/id/125884/"" rel=""nofollow""><strong>Код. Тайный язык информатики</strong> (Чарльз Петцольд)</a></p>
+
+<p><em>От издателя
+Эта книга — азбука компьютерных технологий. Шаг за шагом автор знакомит читателя с сущностью кодирования информации, рассказывает об истории возникновения компьютеров, на практических примерах помогает освоить основные концепции информационных технологий, подробно излагает принципы работы процессора и других устройств компьютера. Написанная живо, доступно, иногда иронично, книга богато иллюстрирована, состоит из 25 глав и предметного указателя. Издание адресовано в первую очередь студентам вузов (как гуманитарных, так и технических), а также всем, кто интересуется принципами создания и работы компьютеров.</em></p>
+
+<p><strong>Оглавление:</strong> </p>
+
+<p>Глава 1 Верные друзья</p>
+
+<p>Глава 2 Коды и комбинации</p>
+
+<p>Глава 3 Брайль и двоичные коды</p>
+
+<p>Глава 4 Анатомия фонарика</p>
+
+<p>Глава 5 Там, за поворотом</p>
+
+<p>Глава 6 Телеграф и реле</p>
+
+<p>Глава 7 Великолепная десятка</p>
+
+<p>Глава 8 Альтернативы десяти</p>
+
+<p>Глава 9 За битом бит</p>
+
+<p>Глава 10 Логика и переключатели</p>
+
+<p>Глава 11 Вентили, которые не протекают</p>
+
+<p>Глава 12 Двоичный сумматор</p>
+
+<p>Глава 13 А как же вычитание?</p>
+
+<p>Глава 14 Обратная связь и триггеры</p>
+
+<p>Глава 15 Байты и шестнадцатеричные числа</p>
+
+<p>Глава 16 Сборка памяти</p>
+
+<p>Глава 17 Автоматизация</p>
+
+<p>Глава 18 От счетов к микросхемам</p>
+
+<p>Глава 19 Два классических микропроцессора</p>
+
+<p>Глава 20 ASCII — символы нашего времени</p>
+
+<p>Глава 21 Под шорох шин</p>
+
+<p>Глава 22 Операционная система</p>
+
+<p>Глава 23 Фиксированная точка, плавающая точка</p>
+
+<p>Глава 24 Языки высокие и низкие</p>
+
+<p>Глава 25 Графическая революция</p>
+",""
+"509436","","-5","<p>Типичный, сука, русский ""форум"". Послали в маны и нахуй. Вы, блядь, буржуйский стэк почитайте и почувствуйте разницу, уёпки.</p>
+",""
+"518312","","-5","<p>Строка от числа отличается, в первую очередь, кавычками...</p>
+",""
+"517554","","-5","<p>После долгих обсуждений и войн, решил выложить альтернативный вариант решения текущей задачи:</p>
+
+<pre><code>$currentPage = isset($_GET['page']) ? $_GET['page'] : 'home';
+$allPages = ['home', 'services'];
+
+if (in_array($currentPage, $allPages)) {
+    include '/page/' . $currentPage . '.php';
+} else {
+    include '/page/error.php';
+}
+</code></pre>
+
+<p>Все, что нужно вам менять - это значения в массиве. Добавляем, изменяем, удаляем страницы до бесконечности.</p>
+
+<p>По умолчанию будет открываться страница : <strong>Home</strong>. </p>
+
+<p>Если же пользователь передаст значения, которых нет в массиве, то по дефолту будет открываться страница : <strong>Error</strong></p>
+
+<p>Данный код можно сократить, но он будет не читабельным. Удачного кодинга...</p>
+",""
+"502723","","-5","<p>Все проблему решил сам, спасибо.</p>
+",""
+"245281","","-5","<p>Флоат даёт ошибки только тогда, когда он плывёт. На вычислении всяких косинусов он не плывёт - поэтому ошибки там врядли возможны.</p>
+<p>Точность не будет падать - её не будет, вместо неё будет округленчиский мусор.</p>
+<p>Каким образом у вас это получилось - я не знаю, ибо у меня cos(M_PI_2) = ноль. 2.0f*2.0f = 4.0. </p>
+<hr>
+<p>Конпелятор всегда знает, ибо нормальные про-пацаны юзают фичи конпелятора, и умеют писать код. В гцц есть такие штуки - <strong>builtin_*() - ими запиленны аналоги самых популярных libc функций. ГГЦ абсалютно точно умеет определять константы - для этого есть свой </strong>builtin_constant_p() - который в любом куске кода тебе 100% скажет - константа эта перменная, либо нет.</p>
+<p>Дак вот, в гцц даже можно писать так:</p>
+<pre><code>  static const double cos_pi = cos(M_PI);//глобальная статик-константа, которая в компилтайме инициализируется результатом вызова функции cos(). Это не особо профитно, ибо издревли система констант в Си лютое говно.
+</code></pre>
+<p>Так же в гцц есть атрибуты, один из которых const - он говорит, что твоя функция не имеет побочных эффектов. И все функции, которые их не имеют - принято так помечать, особенно в glibc и libgcc.</p>
+<p>А всё почему? Патамучто их пишут более-менее про-пацаны. Конпелятору не нужно ничего знать - знает программист, который пишет, а конпелятор должен предоставить ему фичи, с которыми он может пилить нормальный код, а не говно. А неосиляторам подавай оптимизиторы, автоматизаторы и прочую ересь, от которой толка нет, а гонору много.</p>",""
+"537207","","-5","<p>Хах... опят я нашёл решение, тему моно закрывать!:)</p>
+
+<p>Оказалось после строки с ява-кодом стоит пхп-код и это и мешало корректной работе</p>
+
+<p>Вот так выглядело схематически</p>
+
+<ol>
+<li>html</li>
+<li>java sc.</li>
+<li>php</li>
+<li>html</li>
+</ol>
+",""
+"481196","","-5","<p>Здесь все четко и доступно объясняется <a href=""http://developer.alexanderklimov.ru/android/java/innerclass.php"" rel=""nofollow"">Java.Экспресс-курс</a></p>
+
+<p>В семи словах:</p>
+
+<ul>
+<li>вложенные классы = внутренние статические </li>
+<li>внутренние = внутренние
+нестатические</li>
+</ul>
+",""
+"486241","","-5","<p>Модульный <a href=""https://github.com/postcss/postcss"" rel=""nofollow"">препроцессор PostCSS</a> — то, что вам нужно.<br>
+Простой <a href=""https://habrahabr.ru/post/265449/"" rel=""nofollow"">пример использования</a>.</p>
+",""
+"479281","","-5","<ol>
+<li>Java. Потому что это Java, ну и GC там еще.</li>
+<li>По-моему первое.</li>
+</ol>
+",""
+"501025","","-5","<pre><code>$(document, changer).on('ready change', function(e) {
+    check_for(e.type == 'change' ? this.value : $(changer + ':checked').val());
+});
+</code></pre>
+
+<p>Теперь я спокоен.</p>
+",""
+"507350","","-5","<p>слишком много минусов, непоняли сарказма.</p>
+
+<p>привожу примеры</p>
+
+<p><a href=""http://it-docs.org/razgovoraya-rech/frazyi-harakternyie-dlya-razgo.html"" rel=""nofollow"">http://it-docs.org/razgovoraya-rech/frazyi-harakternyie-dlya-razgo.html</a>
+<a href=""http://www.adme.ru/zhizn-nauka/50-razgovornyh-fraz-dlya-obscheniya-na-anglijskom-886310/"" rel=""nofollow"">http://www.adme.ru/zhizn-nauka/50-razgovornyh-fraz-dlya-obscheniya-na-anglijskom-886310/</a>
+<a href=""https://audio-class.ru/razgovornik/phrasebook-resort.php"" rel=""nofollow"">https://audio-class.ru/razgovornik/phrasebook-resort.php</a>
+<a href=""http://englishpapa.by/otpusknoyrazgovornik/"" rel=""nofollow"">http://englishpapa.by/otpusknoyrazgovornik/</a></p>
+",""
+"493952","","-5","<p>Выбирай Oracle на мой взгляд лучшее, чт есть на свете...............</p>
+",""
