@@ -8,6 +8,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from flask.ext.babel import Babel
 
 from local_settings import FLASK_SECRET_KEY, PG_NAME_PASSWORD
+from analysis.question_words import QuestionWords
 
 def make_db_session(engine):
     return scoped_session(sessionmaker(autocommit=False,
@@ -40,3 +41,5 @@ babel = Babel(app)
 STACKOVERFLOW_HOSTNAME = "stackoverflow.com"
 STACKOVERFLOW_SITE_PARAM = "stackoverflow"
 INT_STACKOVERFLOW_SITE_PARAM = LANGUAGE + "." + STACKOVERFLOW_SITE_PARAM
+
+question_words_checker = QuestionWords()

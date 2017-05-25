@@ -11,7 +11,7 @@ sys.path.append("/development/Telethon/telethon")
 
 if sys.version_info[0] >= 3:
     from chats.telegram.telegram import WatchTelegramClient
-    from analysis.analyse import do_analyse, update_stored_data, do_validate, do_print_most_common_words, test_analyser, test_nltk, load_questions, do_auto_review, genereate_negative_examples, upload_big_questions, train_tfidf, validate_tfidf, train_tfidf_conv, validate_tfidf_conv
+    from analysis.analyse import do_print_most_common_words, test_analyser, load_source_data, do_auto_review, upload_big_questions
 
 from meta import *
 from views import *
@@ -32,47 +32,20 @@ if __name__ == "__main__":
                 if client:
                     client = client.disconnect()
             sys.exit()        
-        if str(sys.argv[1]) == "--analyse":
-            do_analyse()
-            sys.exit()        
-        if str(sys.argv[1]) == "--update_stored_data":
-            update_stored_data()
-            sys.exit()        
-        if str(sys.argv[1]) == "--validate":
-            do_validate()
-            sys.exit()        
         if str(sys.argv[1]) == "--print_most_common":
             do_print_most_common_words()
             sys.exit()        
         if str(sys.argv[1]) == "--test_analyser":
             test_analyser()
             sys.exit()  
-        if str(sys.argv[1]) == "--test_nltk":
-            test_nltk()
-            sys.exit()  
-        if str(sys.argv[1]) == "--load_questions":
-            load_questions()
+        if str(sys.argv[1]) == "--load_source_data":
+            load_source_data()
             sys.exit()  
         if str(sys.argv[1]) == "--auto_review":
             do_auto_review()
             sys.exit()  
-        if str(sys.argv[1]) == "--genereate_negative_examples":
-            genereate_negative_examples()
-            sys.exit()  
         if str(sys.argv[1]) == "--upload_big_questions":
             upload_big_questions()
             sys.exit()  
-        if str(sys.argv[1]) == "--train_tfidf":
-            train_tfidf()
-            sys.exit()  
-        if str(sys.argv[1]) == "--validate_tfidf":
-            validate_tfidf()
-            sys.exit()  
-        if str(sys.argv[1]) == "--train_tfidf_conv":
-            train_tfidf_conv()
-            sys.exit()  
-        if str(sys.argv[1]) == "--validate_tfidf_conv":
-            validate_tfidf_conv()
-            sys.exit()              
 
     app.run()

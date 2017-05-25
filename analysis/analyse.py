@@ -81,55 +81,8 @@ class QuestionAnalyser():
                 return True
         return False
 
-def update_stored_data():
-    model = Word2VecModel()
-    model.update_train_data()
-    static_assessment = StaticAssessment()
-    static_assessment.update()
-    
-def do_analyse():
-    model = Word2VecModel()
-    model.train()
-    model.validate_examples()
-    
-def do_validate():
-    model = Word2VecModel()
-    model.validate_examples()
-
-def load_questions(check_existence=True):
-    question_words_checker = QuestionWords()
-    session = db_session()
-
-    with open("questions.csv", 'rt', encoding="utf8") as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=',')
-        for row in csv_reader:
-            source_id, score, answer_count, title, body, tags = row
-            length = len(body)
-            processed_body = tf.compat.as_str(process_text(body, True, 2))
-            code_words = tf.compat.as_str(process_code(body))
-            filtered_vocabualary = processed_body.split()
-            tags = tags.replace('|', " ")
-            word_count = len(filtered_vocabualary)
-            question_words = ""
-            for word in filtered_vocabualary:
-                if question_words_checker.is_question_word(word):
-                    question_words += " " + word
-            SourceData.update_or_create(session,
-                source_id, 
-                SourceData.source_type_so_question,
-                body, 
-                title, 
-                tags, 
-                score, 
-                length, 
-                word_count, 
-                question_words, 
-                processed_body,
-                code_words, 
-                False)
-
-        session.commit()
-        session.close()
+def load_source_data():
+    SourceData.load_all()                 
 
 def do_auto_review():
     session = db_session()
@@ -150,36 +103,8 @@ def do_auto_review():
     session.commit()
     session.close()
 
-def genereate_negative_examples(check_existence=True):
-    question_words_checker = QuestionWords()
-    items = Statement.get_negative()
-
-    for item in items: 
-        filtered_words = tf.compat.as_str(process_text(item.agg_message, True, 2))   
-        filtered_vocabualary = filtered_words.split()   
-        word_count = len(filtered_vocabualary)
-        code_words = tf.compat.as_str(process_code(item.agg_message))
-        
-        question_words = ""
-        for word in filtered_vocabualary:
-            if question_words_checker.is_question_word(word):
-                question_words += " " + word
-
-        SourceData.update_or_create(None, 
-            item.statement_id,
-            SourceData.source_type_tl_statement,
-            item.agg_message, 
-            "",
-            item.tags,
-            0,
-            item.len,
-            word_count,
-            question_words,
-            filtered_words,
-            code_words,
-            True)
-
 def do_print_most_common_words():
+    # TODO: Change to SourceDataWrapper
     model = Word2VecModel()
     model.upload_dataset()
     voc_size = len(model.count)

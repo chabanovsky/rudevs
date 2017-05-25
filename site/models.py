@@ -1,13 +1,15 @@
 import datetime
 import collections
 import numpy as np
+import csv
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, ColumnDefault
 from sqlalchemy import and_, or_, desc
 from sqlalchemy.sql import func, literal_column
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 
-from meta import app as application, db, db_session
+from meta import app as application, db, db_session, question_words_checker
+from analysis.utils import process_text, process_code
 
 class Statement(db.Model):
     __tablename__ = 'statement'
@@ -215,14 +217,36 @@ class SourceData(db.Model):
         return '<VQues %r>' % str(self.id)
 
     @staticmethod
-    def update_or_create_raw():
-        """
-        TODO: Implement this method.
-        """
-        pass
+    def update_or_create_raw(session, source_id, source_type, score, answer_count, title, body, tags, is_negative):
+        length          = len(body)
+        processed_body  = str(process_text(body, True, 2))
+        code_words      = str(process_code(body))
+        filtered_vocabualary = processed_body.split()
+        tags            = tags.replace('|', " ")
+        word_count      = len(filtered_vocabualary)
+        question_words  = ""
+
+        for word in filtered_vocabualary:
+            if question_words_checker.is_question_word(word):
+                question_words += " " + word
+
+        SourceData.update_or_create(session,
+            source_id, 
+            source_type,
+            body, 
+            title, 
+            tags, 
+            score, 
+            length, 
+            word_count, 
+            question_words, 
+            processed_body,
+            code_words, 
+            is_negative)
 
     @staticmethod
-    def update_or_create(session, source_id, 
+    def update_or_create(session, 
+            source_id, 
             source_type, 
             body, 
             title, 
@@ -330,7 +354,178 @@ class SourceData(db.Model):
                 all()
 
         session.close()
-        return items                     
+        return items   
+
+    @staticmethod
+    def load_all():        
+        SourceData.load_good_questions()
+        SourceData.load_good_answers()
+        SourceData.load_spammy_answers()
+        SourceData.load_spammy_comments()
+        SourceData.load_spammy_questions()
+        SourceData.load_bq_questions()
+        SourceData.load_negative_statements()
+
+    """
+    Methods that help to upload data from csv files
+    """
+    @staticmethod
+    def load_good_questions():
+        print ("Starting loading good questions...")
+        session = db_session()
+
+        with open("data/questions.csv", 'rt', encoding="utf8") as csvfile:
+            csv_reader = csv.reader(csvfile, delimiter=',')
+            for row in csv_reader:
+                source_id, score, answer_count, title, body, tags = row
+                
+                SourceData.update_or_create_raw(session, 
+                        source_id, 
+                        SourceData.source_type_so_question, 
+                        score, 
+                        answer_count, 
+                        title, 
+                        body, 
+                        tags, 
+                        False)
+
+        session.commit()
+        session.close()
+
+    @staticmethod
+    def load_good_answers():
+        print ("Starting loading good answers...")
+        session = db_session()
+
+        with open("data/answers.csv", 'rt', encoding="utf8") as csvfile:
+            csv_reader = csv.reader(csvfile, delimiter=',')
+            for row in csv_reader:
+                source_id, score, body, tags = row
+                
+                SourceData.update_or_create_raw(session, 
+                        source_id, 
+                        SourceData.source_type_so_answer, 
+                        score, 
+                        0, 
+                        "", 
+                        body, 
+                        tags, 
+                        False)
+
+        session.commit()
+        session.close()        
+
+    @staticmethod
+    def load_spammy_answers():
+        print ("Starting loading spammy answers...")
+        session = db_session()
+
+        with open("data/spammy_answers.csv", 'rt', encoding="utf8") as csvfile:
+            csv_reader = csv.reader(csvfile, delimiter=',')
+            for row in csv_reader:
+                source_id, title, score, body, tags = row
+                
+                SourceData.update_or_create_raw(session, 
+                        source_id, 
+                        SourceData.source_type_so_answer, 
+                        score, 
+                        0, 
+                        title, 
+                        body, 
+                        tags, 
+                        True)
+
+        session.commit()
+        session.close()    
+
+    @staticmethod
+    def load_spammy_comments():
+        print ("Starting loading spammy comments...")
+        session = db_session()
+
+        with open("data/spammy_comments.csv", 'rt', encoding="utf8") as csvfile:
+            csv_reader = csv.reader(csvfile, delimiter=',')
+            for row in csv_reader:
+                source_id, body, tags, score = row
+                
+                SourceData.update_or_create_raw(session, 
+                        source_id, 
+                        SourceData.source_type_so_answer, 
+                        score, 
+                        0, 
+                        "", 
+                        body, 
+                        tags, 
+                        True)
+
+        session.commit()
+        session.close()  
+
+    @staticmethod
+    def load_spammy_questions():
+        print ("Starting loading spammy questions...")
+        session = db_session()
+
+        with open("data/spammy_questions.csv", 'rt', encoding="utf8") as csvfile:
+            csv_reader = csv.reader(csvfile, delimiter=',')
+            for row in csv_reader:
+                source_id, title, score, body, tags = row
+                
+                SourceData.update_or_create_raw(session, 
+                        source_id, 
+                        SourceData.source_type_so_question, 
+                        score, 
+                        0, 
+                        title, 
+                        body, 
+                        tags, 
+                        True)
+
+        session.commit()
+        session.close()  
+
+    @staticmethod
+    def load_bq_questions():
+        print ("Starting loading bq questions...")
+        session = db_session()
+
+        with open("data/bq_questions.csv.csv", 'rt', encoding="utf8") as csvfile:
+            csv_reader = csv.reader(csvfile, delimiter=',')
+            for row in csv_reader:
+                source_id, title, body, tags, score = row
+                
+                SourceData.update_or_create_raw(session, 
+                        source_id, 
+                        SourceData.source_type_so_bq_question, 
+                        score, 
+                        0, 
+                        title, 
+                        body, 
+                        tags, 
+                        True)
+
+        session.commit()
+        session.close()  
+
+    @staticmethod
+    def load_negative_statements():
+        print ("Starting loading negative statements...")
+        items = Statement.get_negative()
+        session = db_session()
+
+        for item in items: 
+            SourceData.update_or_create_raw(session, 
+                item.statement_id,
+                SourceData.source_type_tl_statement,
+                0,
+                0,
+                "",
+                item.agg_message,
+                "",
+                True)  
+
+        session.commit()
+        session.close()                                         
 
 class SourceDataWrapper():
     def __init__(self, only_positive=False):
